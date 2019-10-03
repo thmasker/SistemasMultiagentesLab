@@ -29,8 +29,15 @@ public abstract class FilmScrapper {
 		this.films = new ArrayList<Film>();
 	}
 	
-	public abstract void fetch(FilmGenre genre, int filmCount) throws IOException;
-	
+	/*
+     * genre: Filter fetched films by genre
+	 * filmCount: Fetch at least this number of films
+	 * 
+	 * Return:
+	 *     int	Actual number of fetched films (Should be >= filmCount)
+	 */
+	public abstract int fetch(FilmGenre genre, int filmCount) throws IOException;
+
 	public ArrayList<Film> getFilms() {
 		return films;
 	}

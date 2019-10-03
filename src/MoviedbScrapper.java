@@ -33,14 +33,15 @@ public class MoviedbScrapper extends FilmScrapper {
 		}};
 	}
 
-	public void fetch(FilmGenre genre, int filmCount) throws IOException {
+	public int fetch(FilmGenre genre, int filmCount) throws IOException {
 		Document doc;
 		Elements items, titles, ratings;
 		String url;
+		int count = 0;
 		
 		films.clear();
 		
-		for(int i = 0; i < (filmCount / FILMS_PER_PAGE + 1); i++) {	// pages + 1 porque la primera iteración no coge información sobre películas
+		for(int i = 0; i < (filmCount / FILMS_PER_PAGE + 1); i++) {	// pages + 1 porque la primera iteraciï¿½n no coge informaciï¿½n sobre pelï¿½culas
 			url = "https://www.themoviedb.org/discover/movie?language=es&list_style=1&media_type=movie&page="
 					+ i + "&primary_release_year=0&sort_by=popularity.desc&vote_count.gte=0" + genresMapping.get(genre);
 			doc = Jsoup.connect(url).get();
@@ -53,7 +54,9 @@ public class MoviedbScrapper extends FilmScrapper {
 				String title = titles.get(j).attr("title");
 				Double rating = Double.parseDouble(ratings.get(j).attr("data-percent")) / 10.0;
 				films.add(new Film(title, rating));
+				count++;
 			}
 		}
+		return count;
 	}
 }

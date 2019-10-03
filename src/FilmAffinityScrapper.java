@@ -4,6 +4,7 @@ import java.util.EnumMap;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class FilmAffinityScrapper extends FilmScrapper {
@@ -33,26 +34,30 @@ public class FilmAffinityScrapper extends FilmScrapper {
         }};
     }
 
-    public void fetch(FilmGenre genre, int filmCount) throws IOException {
+    public int fetch(FilmGenre genre, int filmCount) throws IOException {
         Document doc;
-		Elements items, titles, ratings;
+		Elements items;
         // TODO: Filter only films
 		String url = "https://www.filmaffinity.com/es/topgen.php?genre="  + genresMapping.get(genre) + "&fromyear=&toyear=&country=&nodoc";
-    	
-    	films.clear();
+    	String title, rating;
+        int count = 0;
+
+        films.clear();
 
 		for(int i = 0; i < filmCount; i += FILMS_PER_PAGE) {
 			doc = Jsoup.connect(url).data("from", "" + i).userAgent("Mozilla").post();
             items = doc.select("li > ul");
-            
-            for(int j = 0; j < items.size(); j++) {
-                String title = items.get(j).select("div.mc-title a").first().text();
-                String rating = items.get(j).select("li.data > div.avg-rating").first().text().replace(',', '.');
+
+            for(Element item : items) {
+                title = item.select("div.mc-title a").first().text();
+                rating = item.select("li.data > div.avg-rating").first().text().replace(',', '.');
                 // TODO: Check both values retrieved properly
 
                 // TODO: Check parseDouble exception
                 films.add(new Film(title, Double.parseDouble(rating)));
+                count++;
             }
 		}
+        return count;
     }
 }

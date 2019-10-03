@@ -4,6 +4,7 @@ import java.util.EnumMap;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class ImdbScrapper extends FilmScrapper {
@@ -33,26 +34,30 @@ public class ImdbScrapper extends FilmScrapper {
         }};
     }
 
-    public void fetch(FilmGenre genre, int filmCount) throws IOException {
+    public int fetch(FilmGenre genre, int filmCount) throws IOException {
         Document doc;
-		Elements items, titles, ratings;
-		String url;
+		Elements items;
+		String url, title, rating;
+        int count = 0;
     	
     	films.clear();
 
-        // Download and process HTML, fill 'films'		
 		for(int i = 0; i < (filmCount / FILMS_PER_PAGE); i++) {
 			url = "https://www.imdb.com/search/title/?user_rating=1.0,&genres=" + genresMapping.get(genre)
 					+ "&start=" + (50*i + 1) + "&ref_=adv_nxt";
 			doc = Jsoup.connect(url).get();
-			
 			items = doc.select("div.lister-item-content");
-			titles = items.select("h3 > a");
-			ratings = items.select("div.ratings-imdb-rating");
-			
-			for(int j = 0; j < titles.size(); j++) {
-				films.add(new Film(titles.get(j).text(), Double.parseDouble(ratings.get(j).text())));
-			}
+            
+            for(Element item : items) {
+                title = item.select("h3 > a").first().text();
+                rating = item.select("div.ratings-imdb-rating").first().text();
+                // TODO: Check both values retrieved properly
+
+                // TODO: Check parseDouble exception
+                films.add(new Film(title, Double.parseDouble(rating)));
+                count++;
+            }
 		}
+        return count;
     }
 }
