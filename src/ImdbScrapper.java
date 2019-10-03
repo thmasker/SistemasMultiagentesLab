@@ -7,7 +7,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 public class ImdbScrapper extends FilmScrapper {
-
+	final int FILMS_PER_PAGE = 50;
+	
     @SuppressWarnings("serial")
 	public ImdbScrapper() {
         super();
@@ -32,7 +33,7 @@ public class ImdbScrapper extends FilmScrapper {
         }};
     }
 
-    public void fetch(FilmGenre genre, int pages) throws IOException {
+    public void fetch(FilmGenre genre, int filmCount) throws IOException {
         Document doc;
 		Elements items, titles, ratings;
 		String url;
@@ -40,7 +41,7 @@ public class ImdbScrapper extends FilmScrapper {
     	films.clear();
 
         // Download and process HTML, fill 'films'		
-		for(int i = 0; i < pages; i++) {
+		for(int i = 0; i < (filmCount / FILMS_PER_PAGE); i++) {
 			url = "https://www.imdb.com/search/title/?user_rating=1.0,&genres=" + genresMapping.get(genre)
 					+ "&start=" + (50*i + 1) + "&ref_=adv_nxt";
 			doc = Jsoup.connect(url).get();
