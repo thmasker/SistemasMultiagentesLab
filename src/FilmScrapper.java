@@ -68,7 +68,6 @@ public abstract class FilmScrapper {
 		for(int i = 0; i < n_films; i++) {
 			n_generated[i] = TrueRandomGenerator.getInt(0, this.films.size());
 		}
-		
 		return n_generated;
 	}
 

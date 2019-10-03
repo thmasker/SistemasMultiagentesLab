@@ -40,6 +40,17 @@ public class BotTest {
         bot = new MoviedbScrapper();
         actualCount = bot.fetch(genre, downloadCount);
         System.out.println("> Got " + actualCount + " films");
+        bot.selectFilms(10);
+
+        System.out.println("Retrieving " + downloadCount + " films from FilmAffinity...");
+        bot = new FilmAffinityScrapper();
+        actualCount = bot.fetch(genre, downloadCount);
+        System.out.println("> Got " + actualCount + " films");
+
+        System.out.println("Retrieving " + downloadCount + " films from TheMovieDB...");
+        bot = new MoviedbScrapper();
+        actualCount = bot.fetch(genre, downloadCount);
+        System.out.println("> Got " + actualCount + " films");
         
         ArrayList<Film> selectedMDB = bot.selectFilms(5);
         
