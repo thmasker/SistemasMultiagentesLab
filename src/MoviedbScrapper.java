@@ -4,13 +4,14 @@ import java.util.EnumMap;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public class MoviedbScrapper extends FilmScrapper {
+public class MovieDBScrapper extends FilmScrapper {
 	final int FILMS_PER_PAGE = 20;
 	
 	@SuppressWarnings("serial")
-	public MoviedbScrapper() {
+	public MovieDBScrapper() {
 		super();
 		
 		genresMapping = new EnumMap<FilmGenre, String>(FilmGenre.class){{
@@ -36,7 +37,7 @@ public class MoviedbScrapper extends FilmScrapper {
 	public int fetch(FilmGenre genre, int filmCount) throws IOException {
 		Document doc;
 		Elements items, titles, ratings;
-		String url;
+		String url, title, rating;
 		int count = 0;
 		
 		films.clear();
@@ -45,15 +46,13 @@ public class MoviedbScrapper extends FilmScrapper {
 			url = "https://www.themoviedb.org/discover/movie?language=es&list_style=1&media_type=movie&page="
 					+ i + "&primary_release_year=0&sort_by=popularity.desc&vote_count.gte=0" + genresMapping.get(genre);
 			doc = Jsoup.connect(url).get();
-			
 			items = doc.select("div.info");
-			titles = items.select("div.flex a");
-			ratings = items.select("div.user_score_chart");
-			
-			for(int j = 0; j < titles.size(); j++) {
-				String title = titles.get(j).attr("title");
-				Double rating = Double.parseDouble(ratings.get(j).attr("data-percent")) / 10.0;
-				films.add(new Film(title, rating));
+
+			for(Element item : items) {
+				title = items.select("div.flex a").first().attr("title");
+				rating = item.select("div.user_score_chart").first().attr("data-percent");
+
+				films.add(new Film(title, Double.parseDouble(rating) / 10.0));
 				count++;
 			}
 		}

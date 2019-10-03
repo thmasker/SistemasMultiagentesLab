@@ -18,7 +18,7 @@ public class BotTest {
         System.out.println("> Got " + actualCount + " films");
 
         System.out.println("Retrieving " + downloadCount + " films from TheMovieDB...");
-        bot = new MoviedbScrapper();
+        bot = new MovieDBScrapper();
         actualCount = bot.fetch(genre, downloadCount);
         System.out.println("> Got " + actualCount + " films");
         
