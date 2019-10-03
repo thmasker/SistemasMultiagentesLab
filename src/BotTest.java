@@ -7,6 +7,10 @@ public class BotTest {
         int actualCount;
         FilmScrapper bot;
 
+        for(int i = 0; i < 10; i++) {
+            System.out.println("Random num: " + TrueRandomGenerator.getInt(0,100));
+        }
+
         System.out.println("Retrieving " + downloadCount + " films from IMDB...");
         bot = new ImdbScrapper();
         actualCount = bot.fetch(genre, downloadCount);
@@ -18,7 +22,7 @@ public class BotTest {
         System.out.println("> Got " + actualCount + " films");
 
         System.out.println("Retrieving " + downloadCount + " films from TheMovieDB...");
-        bot = new MovieDBScrapper();
+        bot = new MoviedbScrapper();
         actualCount = bot.fetch(genre, downloadCount);
         System.out.println("> Got " + actualCount + " films");
         
