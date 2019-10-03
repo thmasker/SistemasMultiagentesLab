@@ -42,7 +42,7 @@ public class ImdbScrapper extends FilmScrapper {
     	
     	films.clear();
 
-		for(int i = 0; i < (filmCount / FILMS_PER_PAGE); i++) {
+		for(int i = 0; i < filmCount; i += FILMS_PER_PAGE) {
 			url = "https://www.imdb.com/search/title/?user_rating=1.0,&genres=" + genresMapping.get(genre)
 					+ "&start=" + (50*i + 1) + "&ref_=adv_nxt";
 			doc = Jsoup.connect(url).get();

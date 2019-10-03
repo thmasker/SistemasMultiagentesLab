@@ -42,7 +42,7 @@ public class MoviedbScrapper extends FilmScrapper {
 		
 		films.clear();
 		
-		for(int i = 0; i < (filmCount / FILMS_PER_PAGE + 1); i++) {	// pages + 1 porque la primera iteraci�n no coge informaci�n sobre pel�culas
+		for(int i = 0; i < filmCount + 1; i += FILMS_PER_PAGE) {	// pages + 1 porque la primera iteraci�n no coge informaci�n sobre pel�culas
 			url = "https://www.themoviedb.org/discover/movie?language=es&list_style=1&media_type=movie&page="
 					+ i + "&primary_release_year=0&sort_by=popularity.desc&vote_count.gte=0" + genresMapping.get(genre);
 			doc = Jsoup.connect(url).get();
