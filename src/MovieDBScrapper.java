@@ -7,11 +7,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public class MovieDBScrapper extends FilmScrapper {
+public class MoviedbScrapper extends FilmScrapper {
 	final int FILMS_PER_PAGE = 20;
 	
 	@SuppressWarnings("serial")
-	public MovieDBScrapper() {
+	public MoviedbScrapper() {
 		super();
 		
 		genresMapping = new EnumMap<FilmGenre, String>(FilmGenre.class){{
@@ -36,7 +36,7 @@ public class MovieDBScrapper extends FilmScrapper {
 
 	public int fetch(FilmGenre genre, int filmCount) throws IOException {
 		Document doc;
-		Elements items, titles, ratings;
+		Elements items;
 		String url, title, rating;
 		int count = 0;
 		
