@@ -2,6 +2,7 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.regex.*;
 
 public abstract class FilmScrapper {
 	public enum FilmGenre {
@@ -24,9 +25,15 @@ public abstract class FilmScrapper {
 	}
 	protected EnumMap<FilmGenre, String> genresMapping;
 	protected ArrayList<Film> films;
+	private Pattern ratingPattern;
 	
 	public FilmScrapper() {
 		this.films = new ArrayList<Film>();
+		this.ratingPattern = Pattern.compile("\\d{1,3}.?\\d*");
+	}
+
+	protected boolean isValidRating(String rating) {
+		return ratingPattern.matcher(rating).matches();
 	}
 	
 	/*

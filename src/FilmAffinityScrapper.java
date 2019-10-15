@@ -40,7 +40,6 @@ public class FilmAffinityScrapper extends FilmScrapper {
         // TODO: Filter only films
 		String url = "https://www.filmaffinity.com/es/topgen.php?genre="  + genresMapping.get(genre) + "&fromyear=&toyear=&country=&nodoc";
     	String title, rating;
-        int count = 0;
 
         films.clear();
 
@@ -51,13 +50,13 @@ public class FilmAffinityScrapper extends FilmScrapper {
             for(Element item : items) {
                 title = item.select("div.mc-title a").first().text();
                 rating = item.select("li.data > div.avg-rating").first().text().replace(',', '.');
-                // TODO: Check both values retrieved properly
 
-                // TODO: Check parseDouble exception
-                films.add(new Film(title, Double.parseDouble(rating)));
-                count++;
+                if(title.isEmpty() || !isValidRating(rating))
+                    System.out.println("(*) Warning: Invalid movie ['" + title + "', '" + rating + "']");
+				else
+					films.add(new Film(title, Double.parseDouble(rating)));
             }
 		}
-        return count;
+        return films.size();
     }
 }

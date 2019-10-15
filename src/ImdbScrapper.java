@@ -38,7 +38,6 @@ public class ImdbScrapper extends FilmScrapper {
         Document doc;
 		Elements items;
 		String url, title, rating;
-        int count = 0;
     	
     	films.clear();
 
@@ -51,13 +50,13 @@ public class ImdbScrapper extends FilmScrapper {
             for(Element item : items) {
                 title = item.select("h3 > a").first().text();
                 rating = item.select("div.ratings-imdb-rating").first().text();
-                // TODO: Check both values retrieved properly
 
-                // TODO: Check parseDouble exception
-                films.add(new Film(title, Double.parseDouble(rating)));
-                count++;
+				if(title.isEmpty() || !isValidRating(rating))
+                    System.out.println("(*) Warning: Invalid movie ['" + title + "', '" + rating + "']");
+				else
+					films.add(new Film(title, Double.parseDouble(rating)));
             }
 		}
-        return count;
+        return films.size();
     }
 }

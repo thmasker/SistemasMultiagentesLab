@@ -38,7 +38,6 @@ public class MoviedbScrapper extends FilmScrapper {
 		Document doc;
 		Elements items;
 		String url, title, rating;
-		int count = 0;
 		
 		films.clear();
 		
@@ -52,10 +51,12 @@ public class MoviedbScrapper extends FilmScrapper {
 				title = items.select("div.flex a").first().attr("title");
 				rating = item.select("div.user_score_chart").first().attr("data-percent");
 
-				films.add(new Film(title, Double.parseDouble(rating) / 10.0));
-				count++;
+				if(title.isEmpty() || !isValidRating(rating))
+                    System.out.println("(*) Warning: Invalid movie ['" + title + "', '" + rating + "']");
+				else
+					films.add(new Film(title, Double.parseDouble(rating) / 10.0));
 			}
 		}
-		return count;
+		return films.size();
 	}
 }
