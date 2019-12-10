@@ -1,21 +1,35 @@
 
+ifdef OS
+   RM = del /Q /S
+   OS_SEP = \\
+else
+   ifeq ($(shell uname), Linux)
+      RM = rm -rf
+	  OS_SEP = /
+   endif
+endif
 
-SRCDIR = .\src
-BUILDDIR := .\build
-MAINCLASS := BotTest
-CLASSPATH := "lib/jsoup-1.12.1.jar"
+
+SRC_DIR = .$(OS_SEP)src
+BUILD_DIR = .$(OS_SEP)build
+BOTTEST_CLASS := BotTest
+AGENT_CLASS := movietool.InterfaceAgent
+CLASSPATH := ".$(OS_SEP)lib$(OS_SEP)jsoup-1.12.1.jar;.$(OS_SEP)lib$(OS_SEP)jade.jar"
 
 
 all: java
 
-$(BUILDDIR):
-	@IF NOT EXIST "$(BUILDDIR)" (mkdir "$(BUILDDIR)")
+$(BUILD_DIR):
+	@IF NOT EXIST "$(BUILD_DIR)" (mkdir "$(BUILD_DIR)")
 
-java: $(BUILDDIR)
-	javac -cp $(CLASSPATH) -d "$(BUILDDIR)" $(SRCDIR)\*.java
+java: $(BUILD_DIR)
+	javac -cp $(CLASSPATH) -d "$(BUILD_DIR)" $(SRC_DIR)$(OS_SEP)*.java
 	
+test-bots:
+	java -cp $(CLASSPATH);$(BUILD_DIR) $(BOTTEST_CLASS)
+
 run:
-	java -cp $(CLASSPATH);$(BUILDDIR) BotTest
+	java -cp $(BUILD_DIR);$(CLASSPATH) jade.Boot -gui -agents "interface:$(AGENT_CLASS)"
 
 clean:
-	del /Q $(BUILDDIR)
+	$(RM) $(BUILD_DIR)

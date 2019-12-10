@@ -1,3 +1,11 @@
+# Build files
+./build/*
+./build
+
+# JADE files
+APDescription.txt
+MTPs-Main-Container.txt
+
 # Compiled class file
 *.class
 
@@ -11,7 +19,7 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
+#*.jar
 *.war
 *.nar
 *.ear
