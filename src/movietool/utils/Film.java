@@ -1,3 +1,5 @@
+package movietool.utils;
+
 public class Film {
 	private String title;
 	private double rating;
