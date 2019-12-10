@@ -1,7 +1,7 @@
 
 ifdef OS
    RM = del /Q /S
-   SRC_FILES := $(shell dir /B /S /A:A .\src)
+   SRC_FILES := $(shell forfiles /s /p .\src /m *.java /c "cmd /c echo @path")
    OS_SEP = \\
 else
    ifeq ($(shell uname), Linux)
