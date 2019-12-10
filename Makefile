@@ -11,8 +11,11 @@ endif
 
 
 SRC_DIR = .$(OS_SEP)src
+MOVIE_DIR = $(OS_SEP)movietool
+TEST_DIR = $(OS_SEP)test
+UTILS_DIR = $(OS_SEP)utils
 BUILD_DIR = .$(OS_SEP)build
-BOTTEST_CLASS := BotTest
+BOTTEST_CLASS := movietool.test.BotTest
 AGENT_CLASS := movietool.InterfaceAgent
 CLASSPATH := ".$(OS_SEP)lib$(OS_SEP)jsoup-1.12.1.jar;.$(OS_SEP)lib$(OS_SEP)jade.jar"
 
@@ -23,7 +26,7 @@ $(BUILD_DIR):
 	@IF NOT EXIST "$(BUILD_DIR)" (mkdir "$(BUILD_DIR)")
 
 java: $(BUILD_DIR)
-	javac -cp $(CLASSPATH) -d "$(BUILD_DIR)" $(SRC_DIR)$(OS_SEP)*.java
+	javac -cp $(CLASSPATH) -d "$(BUILD_DIR)" $(SRC_DIR)$(MOVIE_DIR)$(UTILS_DIR)$(OS_SEP)*.java $(SRC_DIR)$(MOVIE_DIR)$(TEST_DIR)$(OS_SEP)*.java $(SRC_DIR)$(MOVIE_DIR)$(OS_SEP)*.java
 	
 test-bots:
 	java -cp $(CLASSPATH);$(BUILD_DIR) $(BOTTEST_CLASS)
@@ -32,4 +35,4 @@ run:
 	java -cp $(BUILD_DIR);$(CLASSPATH) jade.Boot -gui -agents "interface:$(AGENT_CLASS)"
 
 clean:
-	$(RM) $(BUILD_DIR)
+	$(RM) $(BUILD_DIR) .$(OS_SEP)APDescription.txt .$(OS_SEP)MTPs-Main-Container.txt
