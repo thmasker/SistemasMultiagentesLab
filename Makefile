@@ -1,19 +1,17 @@
 
 ifdef OS
    RM = del /Q /S
+   SRC_FILES := $(shell dir /B /S /A:A .\src)
    OS_SEP = \\
 else
    ifeq ($(shell uname), Linux)
       RM = rm -rf
+	  SRC_FILES := $(shell find ./src -name "*.java")
 	  OS_SEP = /
    endif
 endif
 
 
-SRC_DIR = .$(OS_SEP)src
-MOVIE_DIR = $(OS_SEP)movietool
-TEST_DIR = $(OS_SEP)test
-UTILS_DIR = $(OS_SEP)utils
 BUILD_DIR = .$(OS_SEP)build
 BOTTEST_CLASS := movietool.test.BotTest
 AGENT_CLASS := movietool.InterfaceAgent
@@ -26,8 +24,8 @@ $(BUILD_DIR):
 	@IF NOT EXIST "$(BUILD_DIR)" (mkdir "$(BUILD_DIR)")
 
 java: $(BUILD_DIR)
-	javac -cp $(CLASSPATH) -d "$(BUILD_DIR)" $(SRC_DIR)$(MOVIE_DIR)$(UTILS_DIR)$(OS_SEP)*.java $(SRC_DIR)$(MOVIE_DIR)$(TEST_DIR)$(OS_SEP)*.java $(SRC_DIR)$(MOVIE_DIR)$(OS_SEP)*.java
-	
+	javac -cp $(CLASSPATH) -d "$(BUILD_DIR)" $(SRC_FILES)
+
 test-bots:
 	java -cp $(CLASSPATH);$(BUILD_DIR) $(BOTTEST_CLASS)
 
