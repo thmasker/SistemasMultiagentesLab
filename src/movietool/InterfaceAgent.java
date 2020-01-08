@@ -11,26 +11,28 @@ import jade.proto.AchieveREInitiator;
 
 import movietool.utils.FilmScrapper;
 
+@SuppressWarnings("serial")
 public class InterfaceAgent extends Agent {
-    private static final long serialVersionUID = 1L;
+    private ACLMessage msg;
 
     protected void setup() {
-        ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-        
         AID id = new AID();
         id.setLocalName("Integrator");
 
+        msg = new ACLMessage(ACLMessage.REQUEST);
         msg.addReceiver(id);
 
         InterfaceManager fsm = new InterfaceManager();
 
         fsm.registerFirstState(new InterfaceRequester(), "Requester");
-        fsm.registerState(new InterfaceInitiator(this, msg, 0, ""), "Initiator");
-        fsm.registerState(new InterfaceDeleter(), "Deleter");
+        fsm.registerState(new InterfaceInitiator(this, msg), "Initiator");
+        fsm.registerState(new InterfaceRepeater(), "Repeater");
+        fsm.registerLastState(new InterfaceEnder(), "Ender");
 
         fsm.registerDefaultTransition("Requester", "Initiator");
-        fsm.registerDefaultTransition("Initiator", "Deleter");
-        fsm.registerTransition("Deleter", "Requester", 0);
+        fsm.registerDefaultTransition("Initiator", "Repeater");
+        fsm.registerTransition("Repeater", "Requester", 1);
+        fsm.registerTransition("Repeater", "Ender", 0);
 
         addBehaviour(fsm);
     }
@@ -41,77 +43,90 @@ public class InterfaceAgent extends Agent {
     }
 
     private class InterfaceManager extends FSMBehaviour {
-        private static final long serialVersionUID = 1L;
-
         public int onEnd() {
             myAgent.doDelete();
             return super.onEnd();
         }
     }
 
+    /**
+     * InterfaceRequester pide al usuario el número de películas que desea obtener, y el género de las mismas 
+     */
     private class InterfaceRequester extends OneShotBehaviour {
-        private static final long serialVersionUID = 1L;
+        private int n_films;
+        private String genre;
 
         public void action() {
             Scanner sc = new Scanner(System.in);
 
             System.out.println("How many movies do you want to get?");
-            int n_films = sc.nextInt();
+            n_films = sc.nextInt();
 
             for(int i = 0; i < FilmScrapper.FilmGenre.values().length; i++){
-                System.out.println((i+1) + ". " + FilmScrapper.FilmGenre.values()[i]);
+                System.out.println("\t- " + FilmScrapper.FilmGenre.values()[i]);
             }
             System.out.println("\nGenre?");
-            String genre = sc.next();
-
+            genre = sc.next();
             sc.close();
+
+            msg.setContent(n_films + ";" + genre);
         }
     }
 
-    private class InterfaceDeleter extends OneShotBehaviour {
-        private static final long serialVersionUID = 1L;
-
-        private boolean finish;
+    /**
+     * Si el usuario no quiere repetir el proceso, este comportamiento finaliza el agente
+     */
+    private class InterfaceRepeater extends OneShotBehaviour {
+        private boolean finish = false;
         
         public void action(){
+            Scanner sc = new Scanner(System.in);
 
+            System.out.println("Do you want to select more movies? (Y/N)");
+            String option = sc.next();
+            sc.close();
+
+            if(option.charAt(0) == 'Y' || option.charAt(0) == 'y')
+                finish = true;
         }
 
         public int onEnd(){
-            return 0;
+            return finish ? 1 : 0;
+        }
+    }
+
+    /**
+     * Último estado del FSMBehaviour
+     */
+    private class InterfaceEnder extends OneShotBehaviour {
+        public void action(){
+            System.out.println("(C) Alberto Velasco Mata y Diego Pedregal Hidalgo, 2020");
         }
     }
 
     private class InterfaceInitiator extends AchieveREInitiator {
-        private static final long serialVersionUID = 1L;
-        
-        private int n_films;
-        private String genre;
-
-        public InterfaceInitiator(Agent a, ACLMessage msg, int n_films, String genre){
+        public InterfaceInitiator(Agent a, ACLMessage msg) {
             super(a, msg);
-            this.n_films = n_films;
-            this.genre = genre;
         }
 
         protected void handleAgree(ACLMessage msg){
-
+            System.out.println(getLocalName() + " AGREE: El Integrator proporcionará las películas deseadas");
         }
 
         protected void handleRefuse(ACLMessage msg){
-
+            System.out.println(getLocalName() + " REFUSE: El Integrator ha rechazado la petición. Vuelva a intentarlo más tarde");
         }
 
         protected void handleNotUnderstood(ACLMessage msg){
-
+            System.out.println(getLocalName() + " NOT-UNDERSTOOD: El Integrator no entiende la petición. Vuelva a intentarlo");
         }
 
         protected void handleInform(ACLMessage msg){
-
+            //TODO: Obtener lista de películas y mostrarla al usuario
         }
 
         protected void handleFailure(ACLMessage msg){
-
+            System.out.println(getLocalName() + " FAILURE: No se establecer comunicación con el Integrator");
         }
     }
 }
