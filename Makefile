@@ -14,7 +14,7 @@ endif
 
 BUILD_DIR = .$(OS_SEP)build
 BOTTEST_CLASS := movietool.test.BotTest
-AGENT_CLASS := movietool.InterfaceAgent
+INTERFACE_CLASS := movietool.InterfaceAgent
 CLASSPATH := ".$(OS_SEP)lib$(OS_SEP)jsoup-1.12.1.jar;.$(OS_SEP)lib$(OS_SEP)jade.jar"
 
 
@@ -30,7 +30,7 @@ test-bots:
 	java -cp $(CLASSPATH);$(BUILD_DIR) $(BOTTEST_CLASS)
 
 run:
-	java -cp $(BUILD_DIR);$(CLASSPATH) jade.Boot -gui -agents "interface:$(AGENT_CLASS)"
+	java -cp $(BUILD_DIR);$(CLASSPATH) jade.Boot -gui -agents "interface:$(INTERFACE_CLASS)"
 
 clean:
 	$(RM) $(BUILD_DIR) .$(OS_SEP)APDescription.txt .$(OS_SEP)MTPs-Main-Container.txt
