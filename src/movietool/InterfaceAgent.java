@@ -100,7 +100,7 @@ public class InterfaceAgent extends Agent {
      */
     private class InterfaceEnder extends OneShotBehaviour {
         public void action(){
-            System.out.println("(C) Alberto Velasco Mata y Diego Pedregal Hidalgo, 2020");
+            System.out.println("(C) Alberto Velasco Mata and Diego Pedregal Hidalgo, 2020");
         }
     }
 
@@ -110,15 +110,15 @@ public class InterfaceAgent extends Agent {
         }
 
         protected void handleAgree(ACLMessage msg){
-            System.out.println(getLocalName() + " AGREE: El Integrator proporcionará las películas deseadas");
+            System.out.println(getLocalName() + " AGREE: Integrator will provide the requested films");
         }
 
         protected void handleRefuse(ACLMessage msg){
-            System.out.println(getLocalName() + " REFUSE: El Integrator ha rechazado la petición. Vuelva a intentarlo más tarde");
+            System.out.println(getLocalName() + " REFUSE: Integrator refused the request. Try again later");
         }
 
         protected void handleNotUnderstood(ACLMessage msg){
-            System.out.println(getLocalName() + " NOT-UNDERSTOOD: El Integrator no entiende la petición. Vuelva a intentarlo");
+            System.out.println(getLocalName() + " NOT-UNDERSTOOD: Integrator did not understand the request. Try again");
         }
 
         protected void handleInform(ACLMessage msg){
@@ -126,7 +126,7 @@ public class InterfaceAgent extends Agent {
         }
 
         protected void handleFailure(ACLMessage msg){
-            System.out.println(getLocalName() + " FAILURE: No se establecer comunicación con el Integrator");
+            System.out.println(getLocalName() + " FAILURE: Could not establish communication with Integrator");
         }
     }
 }
