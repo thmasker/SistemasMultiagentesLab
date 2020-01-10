@@ -34,6 +34,10 @@ public abstract class FilmScrapper {
 		this.ratingPattern = Pattern.compile("\\d{1,3}.?\\d*");
 	}
 
+	public ArrayList<Film> getFilms() {
+		return films;
+	}
+
 	protected boolean isValidRating(String rating) {
 		return ratingPattern.matcher(rating).matches();
 	}
@@ -53,7 +57,7 @@ public abstract class FilmScrapper {
 	 * Return:
 	 * 		ArrayList<Film>	Selected films based on true random numbers
 	 */
-	public ArrayList<Film> selectFilms(int n_films) throws IOException{
+	public ArrayList<Film> selectFilms(int n_films) throws IOException {
 		ArrayList<Film> selected = new ArrayList<Film>();
 		
 		int [] randoms = random(n_films);
@@ -78,9 +82,5 @@ public abstract class FilmScrapper {
 			n_generated[i] = TrueRandomGenerator.getInt(0, this.films.size());
 		}
 		return n_generated;
-	}
-
-	public ArrayList<Film> getFilms() {
-		return films;
 	}
 }

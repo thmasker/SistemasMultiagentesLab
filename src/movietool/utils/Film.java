@@ -1,6 +1,9 @@
 package movietool.utils;
 
-public class Film {
+import java.io.Serializable;
+
+@SuppressWarnings("serial")
+public class Film implements Serializable {
 	private String title;
 	private double rating;
 	

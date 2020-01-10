@@ -56,6 +56,6 @@ public class BotTest {
         System.out.println("> Randomly selected " + selectedMDB.size() + " films");
         
         for(Film film : selectedMDB)
-        	System.out.println(film.getRating() + "\t" + film.getTitle());
+            System.out.println(film.getRating() + "\t" + film.getTitle());
     }
 }

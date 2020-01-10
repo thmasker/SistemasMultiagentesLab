@@ -63,6 +63,7 @@ public class ImdbScrapper extends FilmScrapper {
 					films.add(new Film(title, Double.parseDouble(rating)));
             }
 		}
+
         return films.size();
     }
 }
