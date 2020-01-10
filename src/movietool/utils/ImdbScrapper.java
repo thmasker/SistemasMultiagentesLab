@@ -50,8 +50,12 @@ public class ImdbScrapper extends FilmScrapper {
 			items = doc.select("div.lister-item-content");
             
             for(Element item : items) {
-                title = item.select("h3 > a").first().text();
-                rating = item.select("div.ratings-imdb-rating").first().text();
+				title = item.select("h3 > a").first().text();
+				try{
+					rating = item.select("div.ratings-imdb-rating").first().text();
+				} catch(NullPointerException npe){
+					rating = "";
+				}
 
 				if(title.isEmpty() || !isValidRating(rating))
                     System.out.println("(*) Warning: Invalid movie ['" + title + "', '" + rating + "']");
