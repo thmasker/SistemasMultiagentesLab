@@ -23,7 +23,7 @@ public class CollectorAgent extends Agent {
 	protected void setup() {
 		Object[] args = getArguments();
 
-		if (args == null) {
+		if(args == null){
 			System.out.println(getLocalName() + " did not receive from which website to retrieve. Terminating...");
 			this.takeDown();
 		}
@@ -35,8 +35,7 @@ public class CollectorAgent extends Agent {
 			this.takeDown();
 		}
 
-		addBehaviour(new CollectorResponder(this,
-				MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST)));
+		addBehaviour(new CollectorResponder(this, MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST)));
 	}
 
 	protected void takeDown() {
@@ -50,28 +49,32 @@ public class CollectorAgent extends Agent {
 		}
 
 		protected ACLMessage handleRequest(ACLMessage msg) throws NotUnderstoodException {
+			ArrayList<Film> selected = new ArrayList<Film>();
 			String[] contents = msg.getContent().split(";");
 			int n_films = Integer.parseInt(contents[1]);
 
 			try {
 				// TODO Mirar qué ocurre cuando contents[0] no es un género válido y n_films no es un número
-				// TODO n_films hay que regularlo, porque es el valor para el select, no para el fetch
-				int actualCount = fs.fetch(FilmGenre.valueOf(contents[0]), n_films);
-				System.out.println("> Got " + actualCount + " films");
+				int actualCount = fs.fetch(FilmGenre.valueOf(contents[0]), n_films * 4);
+				System.out.println(getLocalName() + "> Got " + actualCount + " films");
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
 			}
 
 			try {
 				// TODO Mirar qué ocurre cuando n_films no es válido
-				ArrayList<Film> selected = fs.selectFilms(n_films);
-				System.out.println("> Randomly selected " + selected.size() + " films");
+				selected = fs.selectFilms(n_films);
+				System.out.println(getLocalName() + "> Randomly selected " + selected.size() + " films");
 			} catch (IOException ioe) {
-				// TODO Auto-generated catch block
 				ioe.printStackTrace();
 			}
 
 			msg = msg.createReply();
+			try {
+				msg.setContentObject(selected);
+			} catch (IOException ioe) {
+				ioe.printStackTrace();
+			}
 
 			return msg;
 		}

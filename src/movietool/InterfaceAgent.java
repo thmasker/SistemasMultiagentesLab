@@ -1,5 +1,6 @@
 package movietool;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import jade.core.Agent;
@@ -7,8 +8,10 @@ import jade.core.AID;
 import jade.core.behaviours.FSMBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.UnreadableException;
 import jade.proto.AchieveREInitiator;
 
+import movietool.utils.Film;
 import movietool.utils.FilmScrapper;
 
 @SuppressWarnings("serial")
@@ -50,7 +53,7 @@ public class InterfaceAgent extends Agent {
     }
 
     /**
-     * InterfaceRequester pide al usuario el número de películas que desea obtener, y el género de las mismas 
+     * InterfaceRequester pide al usuario el número de películas que desea obtener, y el género de las mismas
      */
     private class InterfaceRequester extends OneShotBehaviour {
         private int n_films;
@@ -78,7 +81,7 @@ public class InterfaceAgent extends Agent {
      */
     private class InterfaceRepeater extends OneShotBehaviour {
         private boolean finish = false;
-        
+
         public void action(){
             Scanner sc = new Scanner(System.in);
 
@@ -121,8 +124,21 @@ public class InterfaceAgent extends Agent {
             System.out.println(getLocalName() + " NOT-UNDERSTOOD: Integrator did not understand the request. Try again");
         }
 
+        @SuppressWarnings("unchecked")
         protected void handleInform(ACLMessage msg){
-            //TODO: Obtener lista de películas y mostrarla al usuario
+            ArrayList<Film> films = new ArrayList<Film>();
+
+            // TODO: Ver si funciona esto realmente
+            try {
+                films = (ArrayList<Film>) msg.getContentObject();
+            } catch (UnreadableException ue){
+                System.out.println(getLocalName() + " INFORM: could not deserialize message content");
+            }
+
+            System.out.println("------ FILMS SELECTED -------");
+            for(Film film: films){
+                System.out.println("- " + film.getRating() + "\t" + film.getTitle());
+            }
         }
 
         protected void handleFailure(ACLMessage msg){
