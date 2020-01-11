@@ -55,7 +55,7 @@ public class InterfaceAgent extends Agent {
     }
 
     /**
-     * InterfaceRequester pide al usuario el número de películas que desea obtener, y el género de las mismas
+     * InterfaceRequester ask the user both the number of movies to retrieve and their genre
      */
     private class InterfaceRequester extends OneShotBehaviour {
         private int n_films;
@@ -102,7 +102,7 @@ public class InterfaceAgent extends Agent {
     }
 
     /**
-     * Si el usuario no quiere repetir el proceso, este comportamiento finaliza el agente
+     * If user does not want to repeat the process, this behaviour ends the agent
      */
     private class InterfaceRepeater extends OneShotBehaviour {
         private boolean finish = false;
@@ -124,7 +124,7 @@ public class InterfaceAgent extends Agent {
     }
 
     /**
-     * Último estado del FSMBehaviour
+     * FSMBehaviour's last state
      */
     private class InterfaceEnder extends OneShotBehaviour {
         public void action(){
