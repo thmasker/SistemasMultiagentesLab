@@ -83,4 +83,19 @@ public abstract class FilmScrapper {
 		}
 		return n_generated;
 	}
+
+	/**
+	 * genre: Genre to be checked
+	 * 
+	 * Return:
+	 *		true if genre is a valid FilmGenre; false otherwise
+	 */
+	public static boolean isValidGenre(String genre){
+		try {
+			FilmGenre.valueOf(genre);
+			return true;
+		} catch (IllegalArgumentException | NullPointerException e) {
+			return false;
+		}
+	}
 }
