@@ -57,10 +57,6 @@ public class CollectorAgent extends Agent {
 			// TODO Ver si esto está bien del todo (código, vaya)
             String [] contents = request.getContent().split(";");
             
-            /*StringTokenizer data = new StringTokenizer(request.getContent());
-            String genre = data.nextToken();
-            int count = data.nextInt();*/
-            
             if(contents.length != 2) {  // Check valid format
                 genre = contents[0];
 
