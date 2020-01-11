@@ -1,3 +1,4 @@
+// TODO COMPROBAR QUE EL MAKEFILE FUNCIONE CORRECTAMENTE EN LINUX
 package movietool;
 
 import java.util.ArrayList;
