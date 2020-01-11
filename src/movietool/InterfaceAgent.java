@@ -1,6 +1,8 @@
 package movietool;
 
 import java.util.ArrayList;
+import java.util.InputMismatchException;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import jade.core.Agent;
@@ -60,19 +62,42 @@ public class InterfaceAgent extends Agent {
         private String genre;
 
         public void action() {
-            Scanner sc = new Scanner(System.in);
-
             System.out.println("How many movies do you want to get?");
-            n_films = sc.nextInt();
+            n_films = this.requestInt();
 
             for(int i = 0; i < FilmScrapper.FilmGenre.values().length; i++){
                 System.out.println("\t- " + FilmScrapper.FilmGenre.values()[i]);
             }
             System.out.println("\nGenre?");
-            genre = sc.next();
-            sc.close();
+            genre = this.requestString();
 
-            msg.setContent(n_films + ";" + genre);
+            msg.setContent(genre + ";" + n_films);
+        }
+
+        private String requestString(){
+            while(true){
+                Scanner sc = new Scanner(System.in);
+                try{
+                    String str = sc.next();
+                    sc.close();
+                    return str;
+                } catch(NoSuchElementException nse){
+                    System.out.println(getLocalName() + " ERROR: You must enter a string");
+                }
+            }
+        }
+
+        private int requestInt(){
+            while(true){
+                Scanner sc = new Scanner(System.in);
+                try{
+                    int n = sc.nextInt();
+                    sc.close();
+                    return n;
+                } catch(InputMismatchException ime){
+                    System.out.println(getLocalName() + " ERROR: You must enter an integer number");
+                }
+            }
         }
     }
 
@@ -117,18 +142,18 @@ public class InterfaceAgent extends Agent {
         }
 
         protected void handleRefuse(ACLMessage msg){
-            System.out.println(getLocalName() + " REFUSE: Integrator refused the request. Try again later");
+            System.out.println(getLocalName() + " REFUSE: " + msg.getContent());
         }
 
         protected void handleNotUnderstood(ACLMessage msg){
-            System.out.println(getLocalName() + " NOT-UNDERSTOOD: Integrator did not understand the request. Try again");
+            System.out.println(getLocalName() + " NOT-UNDERSTOOD: " + msg.getContent());
         }
 
         @SuppressWarnings("unchecked")
         protected void handleInform(ACLMessage msg){
             ArrayList<Film> films = new ArrayList<Film>();
 
-            // TODO: Ver si funciona esto realmente
+            // TODO: Ver si la serialización funciona realmente
             try {
                 films = (ArrayList<Film>) msg.getContentObject();
             } catch (UnreadableException ue){
@@ -137,7 +162,7 @@ public class InterfaceAgent extends Agent {
 
             System.out.println("------ FILMS SELECTED -------");
             for(Film film: films){
-                System.out.println("- " + film.getRating() + "\t" + film.getTitle());
+                System.out.println("\t- " + film.getRating() + "\t" + film.getTitle());
             }
         }
 
