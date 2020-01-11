@@ -3,7 +3,6 @@ package movietool;
 
 import java.util.ArrayList;
 import java.util.InputMismatchException;
-import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 import jade.core.Agent;
@@ -59,6 +58,10 @@ public class InterfaceAgent extends Agent {
      * InterfaceRequester ask the user both the number of movies to retrieve and their genre
      */
     private class InterfaceRequester extends OneShotBehaviour {
+        // TODO requestInt() no funciona bien.
+        // TODO Cuando requestInt() funcione, comprobar la repetición del proceso
+        private Scanner sc = new Scanner(System.in);
+
         private int n_films;
         private String genre;
 
@@ -70,30 +73,15 @@ public class InterfaceAgent extends Agent {
                 System.out.println("\t- " + FilmScrapper.FilmGenre.values()[i]);
             }
             System.out.println("\nGenre?");
-            genre = this.requestString();
+            genre = sc.next();
 
             msg.setContent(genre + ";" + n_films);
         }
 
-        private String requestString(){
-            while(true){
-                Scanner sc = new Scanner(System.in);
-                try{
-                    String str = sc.next();
-                    sc.close();
-                    return str;
-                } catch(NoSuchElementException nse){
-                    System.out.println(getLocalName() + " ERROR: You must enter a string");
-                }
-            }
-        }
-
         private int requestInt(){
             while(true){
-                Scanner sc = new Scanner(System.in);
                 try{
                     int n = sc.nextInt();
-                    sc.close();
                     return n;
                 } catch(InputMismatchException ime){
                     System.out.println(getLocalName() + " ERROR: You must enter an integer number");
@@ -111,7 +99,7 @@ public class InterfaceAgent extends Agent {
         public void action(){
             Scanner sc = new Scanner(System.in);
 
-            System.out.println("Do you want to select more movies? (Y/N)");
+            System.out.println("\nDo you want to select more movies? (Y/N)");
             String option = sc.next();
             sc.close();
 
@@ -129,7 +117,7 @@ public class InterfaceAgent extends Agent {
      */
     private class InterfaceEnder extends OneShotBehaviour {
         public void action(){
-            System.out.println("(C) Alberto Velasco Mata and Diego Pedregal Hidalgo, 2020");
+            System.out.println("\n(C) Alberto Velasco Mata and Diego Pedregal Hidalgo, 2020\n");
         }
     }
 
