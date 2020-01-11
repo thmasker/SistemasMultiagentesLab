@@ -6,7 +6,9 @@ import javax.naming.NameNotFoundException;
 
 import jade.core.Agent;
 import jade.domain.FIPANames;
+import jade.domain.FIPAAgentManagement.FailureException;
 import jade.domain.FIPAAgentManagement.NotUnderstoodException;
+import jade.domain.FIPAAgentManagement.RefuseException;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.proto.AchieveREResponder;
@@ -44,39 +46,64 @@ public class CollectorAgent extends Agent {
 	}
 
 	private class CollectorResponder extends AchieveREResponder {
+		private String genre;
+		private int n_films;
+
 		public CollectorResponder(Agent a, MessageTemplate mt) {
 			super(a, mt);
 		}
 
-		protected ACLMessage handleRequest(ACLMessage msg) throws NotUnderstoodException {
+		protected ACLMessage handleRequest(ACLMessage request) throws NotUnderstoodException, RefuseException {
+			// TODO Ver si esto está bien del todo (código, vaya)
+            String [] contents = request.getContent().split(";");
+            
+            /*StringTokenizer data = new StringTokenizer(request.getContent());
+            String genre = data.nextToken();
+            int count = data.nextInt();*/
+            
+            if(contents.length != 2) {  // Check valid format
+                genre = contents[0];
+
+                try {
+                    n_films = Integer.parseInt(contents[1]);
+                } catch (NumberFormatException nfe) {
+                    throw new NotUnderstoodException("Invalid format: \"GENRE;N_FILMS\" expected");
+                }
+
+                if(FilmScrapper.isValidGenre(genre)) {  // Check valid genre
+                    ACLMessage agreeMsg = request.createReply();
+                    agreeMsg.setPerformative(ACLMessage.AGREE);
+                    return agreeMsg;
+                } else throw new RefuseException("Genre not valid");
+            } else throw new NotUnderstoodException("Invalid format: \"GENRE;N_FILMS\" expected");
+		}
+
+		protected ACLMessage prepareResultNotification(ACLMessage request, ACLMessage response) throws FailureException {
 			ArrayList<Film> selected = new ArrayList<Film>();
-			String[] contents = msg.getContent().split(";");
-			int n_films = Integer.parseInt(contents[1]);
 
 			try {
-				// TODO Mirar qué ocurre cuando contents[0] no es un género válido y n_films no es un número
-				int actualCount = fs.fetch(FilmGenre.valueOf(contents[0]), n_films * 4);
+				int actualCount = fs.fetch(FilmGenre.valueOf(genre), n_films * 4);
 				System.out.println(getLocalName() + "> Got " + actualCount + " films");
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
 			}
 
 			try {
-				// TODO Mirar qué ocurre cuando n_films no es válido
 				selected = fs.selectFilms(n_films);
 				System.out.println(getLocalName() + "> Randomly selected " + selected.size() + " films");
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
 			}
 
-			msg = msg.createReply();
+			ACLMessage informMsg = request.createReply();
+			informMsg.setPerformative(ACLMessage.INFORM);
 			try {
-				msg.setContentObject(selected);
+				informMsg.setContentObject(selected);
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
 			}
 
-			return msg;
-		}
+			return informMsg;
+        }
 	}
 }
