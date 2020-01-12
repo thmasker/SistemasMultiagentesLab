@@ -39,8 +39,7 @@ public class FilmAffinityScrapper extends FilmScrapper {
     public int fetch(FilmGenre genre, int filmCount) throws IOException {
         Document doc;
 		Elements items;
-        // TODO: Filter only films
-		String url = "https://www.filmaffinity.com/es/topgen.php?genre="  + genresMapping.get(genre) + "&fromyear=&toyear=&country=&nodoc";
+		String url = "https://www.filmaffinity.com/es/topgen.php?genre="  + genresMapping.get(genre) + "&fromyear=&toyear=&country=&nodoc&notvse";
     	String title, rating;
 
         films.clear();
