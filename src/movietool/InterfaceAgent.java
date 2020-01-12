@@ -67,7 +67,7 @@ public class InterfaceAgent extends Agent {
 
         public void action() {
             // TODO requestInt() no funciona bien.
-            // TODO Cuando requestInt() funcione, comprobar la repetición del proceso
+            // TODO Cuando requestInt() funcione, comprobar la repetición del proceso. A las malas no se repite el proceso
             System.out.println("How many movies do you want to get?");
             n_films = this.requestInt();
 
