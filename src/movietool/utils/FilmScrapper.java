@@ -57,6 +57,7 @@ public abstract class FilmScrapper {
 	 * Return:
 	 * 		ArrayList<Film>	Selected films based on true random numbers
 	 */
+	// TODO este método falla a veces: IndexOutOfBoundsException
 	public ArrayList<Film> selectFilms(int n_films) throws IOException {
 		ArrayList<Film> selected = new ArrayList<Film>();
 		
