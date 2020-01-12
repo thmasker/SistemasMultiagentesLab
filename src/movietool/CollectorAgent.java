@@ -23,21 +23,14 @@ public class CollectorAgent extends Agent {
 	private FilmScrapper fs;
 
 	protected void setup() {
-		Object[] args = getArguments();
-
-		if(args == null){
-			System.out.println(getLocalName() + " did not receive from which website to retrieve. Terminating...");
-			this.takeDown();
-		}
-
 		try {
-			fs = FilmScrapperFactory.createFilmScrapper(args[0].toString());
+			fs = FilmScrapperFactory.createFilmScrapper(getLocalName());
 		} catch (NameNotFoundException nfe) {
 			System.out.println(getLocalName() + " " + nfe.getExplanation() + " Terminating...");
 			this.takeDown();
 		}
 
-		addBehaviour(new CollectorResponder(this, MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST)));
+		addBehaviour(new CollectorResponder(this, MessageTemplate.and(MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST), MessageTemplate.MatchPerformative(ACLMessage.REQUEST))));
 	}
 
 	protected void takeDown() {
@@ -96,7 +89,7 @@ public class CollectorAgent extends Agent {
 			try {
 				informMsg.setContentObject(selected);
 			} catch (IOException ioe) {
-				ioe.printStackTrace();
+				throw new FailureException("Could not serialize content");
 			}
 
 			return informMsg;

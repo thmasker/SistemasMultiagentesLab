@@ -9,6 +9,7 @@ import jade.core.Agent;
 import jade.core.AID;
 import jade.core.behaviours.FSMBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
+import jade.domain.FIPANames;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
 import jade.proto.AchieveREInitiator;
@@ -18,6 +19,7 @@ import movietool.utils.FilmScrapper;
 
 @SuppressWarnings("serial")
 public class InterfaceAgent extends Agent {
+    private Scanner sc = new Scanner(System.in);
     private ACLMessage msg;
 
     protected void setup() {
@@ -25,11 +27,13 @@ public class InterfaceAgent extends Agent {
         id.setLocalName("Integrator");
 
         msg = new ACLMessage(ACLMessage.REQUEST);
+        msg.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
         msg.addReceiver(id);
 
         InterfaceManager fsm = new InterfaceManager();
 
         fsm.registerFirstState(new InterfaceRequester(), "Requester");
+        // TODO No funciona porque el InterfaceInitiator es creado con el contenido del msg nulo
         fsm.registerState(new InterfaceInitiator(this, msg), "Initiator");
         fsm.registerState(new InterfaceRepeater(), "Repeater");
         fsm.registerLastState(new InterfaceEnder(), "Ender");
@@ -58,14 +62,12 @@ public class InterfaceAgent extends Agent {
      * InterfaceRequester ask the user both the number of movies to retrieve and their genre
      */
     private class InterfaceRequester extends OneShotBehaviour {
-        // TODO requestInt() no funciona bien.
-        // TODO Cuando requestInt() funcione, comprobar la repetición del proceso
-        private Scanner sc = new Scanner(System.in);
-
         private int n_films;
         private String genre;
 
         public void action() {
+            // TODO requestInt() no funciona bien.
+            // TODO Cuando requestInt() funcione, comprobar la repetición del proceso
             System.out.println("How many movies do you want to get?");
             n_films = this.requestInt();
 
@@ -97,11 +99,8 @@ public class InterfaceAgent extends Agent {
         private boolean finish = false;
 
         public void action(){
-            Scanner sc = new Scanner(System.in);
-
             System.out.println("\nDo you want to select more movies? (Y/N)");
             String option = sc.next();
-            sc.close();
 
             if(option.charAt(0) == 'Y' || option.charAt(0) == 'y')
                 finish = true;
@@ -126,25 +125,25 @@ public class InterfaceAgent extends Agent {
             super(a, msg);
         }
 
-        protected void handleAgree(ACLMessage msg){
+        protected void handleAgree(ACLMessage agree){
             System.out.println(getLocalName() + " AGREE: Integrator will provide the requested films");
         }
 
-        protected void handleRefuse(ACLMessage msg){
-            System.out.println(getLocalName() + " REFUSE: " + msg.getContent());
+        protected void handleRefuse(ACLMessage refuse){
+            System.out.println(getLocalName() + " REFUSE: " + refuse.getContent());
         }
 
-        protected void handleNotUnderstood(ACLMessage msg){
-            System.out.println(getLocalName() + " NOT-UNDERSTOOD: " + msg.getContent());
+        protected void handleNotUnderstood(ACLMessage notUnderstood){
+            System.out.println(getLocalName() + " NOT-UNDERSTOOD: " + notUnderstood.getContent());
         }
 
         @SuppressWarnings("unchecked")
-        protected void handleInform(ACLMessage msg){
+        protected void handleInform(ACLMessage inform){
             ArrayList<Film> films = new ArrayList<Film>();
 
             // TODO: Ver si la serialización funciona realmente
             try {
-                films = (ArrayList<Film>) msg.getContentObject();
+                films = (ArrayList<Film>) inform.getContentObject();
             } catch (UnreadableException ue){
                 System.out.println(getLocalName() + " INFORM: could not deserialize message content");
             }
@@ -155,8 +154,8 @@ public class InterfaceAgent extends Agent {
             }
         }
 
-        protected void handleFailure(ACLMessage msg){
-            System.out.println(getLocalName() + " FAILURE: Could not establish communication with Integrator");
+        protected void handleFailure(ACLMessage failure){
+            System.out.println(getLocalName() + " FAILURE: " + failure.getContent());
         }
     }
 }
