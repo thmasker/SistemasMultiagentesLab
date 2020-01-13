@@ -61,11 +61,10 @@ public abstract class FilmScrapper {
 	public ArrayList<Film> selectFilms(int n_films) throws IOException {
 		ArrayList<Film> selected = new ArrayList<Film>();
 		
-		int [] randoms = random(n_films);
+		int[] randomNumbers = random(n_films);
 		
-		for(int random : randoms) {
+		for(int random : randomNumbers)
 			selected.add(films.get(random));
-		}
 		
 		return selected;
 	}
@@ -77,11 +76,13 @@ public abstract class FilmScrapper {
 	 * 		int []	Randomly generated numbers
 	 */
 	protected int [] random(int n_films) throws IOException {
-		int [] n_generated = new int[n_films];
+		int[] n_generated = new int[n_films];
+		int max = this.films.size() - 1;
 		
-		for(int i = 0; i < n_films; i++) {
-			n_generated[i] = TrueRandomGenerator.getInt(0, this.films.size());
-		}
+		// TODO: Avoid repeated numbers
+		for(int i = 0; i < n_films; i++)
+			n_generated[i] = TrueRandomGenerator.getInt(0, max);
+		
 		return n_generated;
 	}
 
