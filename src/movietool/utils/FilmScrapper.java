@@ -57,7 +57,6 @@ public abstract class FilmScrapper {
 	 * Return:
 	 * 		ArrayList<Film>	Selected films based on true random numbers
 	 */
-	// TODO este método falla a veces: IndexOutOfBoundsException
 	public ArrayList<Film> selectFilms(int n_films) throws IOException {
 		ArrayList<Film> selected = new ArrayList<Film>();
 		
@@ -75,7 +74,7 @@ public abstract class FilmScrapper {
 	 * Return:
 	 * 		int []	Randomly generated numbers
 	 */
-	protected int [] random(int n_films) throws IOException {
+	protected int[] random(int n_films) throws IOException {
 		int[] n_generated = new int[n_films];
 		int max = this.films.size() - 1;
 		
@@ -98,6 +97,38 @@ public abstract class FilmScrapper {
 			return true;
 		} catch (IllegalArgumentException | NullPointerException e) {
 			return false;
+		}
+	}
+
+	public static class FilmRequest {
+		private String genre;
+		private int filmCount;
+
+		public String getGenre() { return this.genre; }
+		public int getFilmCount() { return this.filmCount; }
+
+		public FilmRequest(String genre, int filmCount) {
+			this.genre = genre;
+			this.filmCount = filmCount;
+		}
+
+		public static FilmRequest parse(String request) {
+			String[] data = request.split(";");
+
+            if (data.length != 2)
+                return null;
+            else {
+                try {
+                    return new FilmRequest(data[0].trim(), Integer.parseInt(data[1].trim()));
+                } catch (NumberFormatException nfe) {
+                    return null;
+                }
+			}
+		}
+
+		@Override
+		public String toString() {
+			return getGenre() + ";" + getFilmCount();
 		}
 	}
 }

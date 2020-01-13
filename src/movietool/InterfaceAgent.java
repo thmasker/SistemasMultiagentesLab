@@ -1,4 +1,3 @@
-// TODO COMPROBAR QUE EL MAKEFILE FUNCIONE CORRECTAMENTE EN LINUX
 package movietool;
 
 import java.util.ArrayList;
@@ -45,10 +44,10 @@ public class InterfaceAgent extends Agent {
             /// [ USER INTERACTION ]
             /// Film count
             System.out.print("How many movies do you want to get?\n>> ");
-            int film_count;
+            int filmCount;
             while(true) {
                 try{
-                    film_count = Integer.parseInt(sc.nextLine().trim());
+                    filmCount = Integer.parseInt(sc.nextLine().trim());
                     break;
                 } catch(NumberFormatException ime){
                     System.out.print("[" + getLocalName() + "] ERROR: You must enter an integer number\n>> ");
@@ -62,7 +61,7 @@ public class InterfaceAgent extends Agent {
             String genre = sc.nextLine().trim();
 
             // Fill Integrator request
-            request.setContent(genre + ";" + film_count);
+            request.setContent(genre + ";" + filmCount);
             return super.prepareRequests(request);
         }
 

@@ -23,97 +23,82 @@ import movietool.utils.FilmScrapperFactory;
 
 @SuppressWarnings("serial")
 public class IntegratorAgent extends Agent {
-    private void debug(String msg) {
-        System.out.println("[INTEGRATOR] " + msg);
-    }
-
     private ArrayList<Film> films = new ArrayList<Film>();
 
     public void setup() {
-        addBehaviour(new InterfaceResponder(this, MessageTemplate.and(MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST), MessageTemplate.MatchPerformative(ACLMessage.REQUEST))));
+        addBehaviour(new InterfaceResponder(this, MessageTemplate.and(
+            MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST),
+            MessageTemplate.MatchPerformative(ACLMessage.REQUEST))));
     }
 
     private class InterfaceResponder extends AchieveREResponder {
-        private String genre;
-        private int n_films;
-
         public InterfaceResponder(Agent agent, MessageTemplate mt) {
             super(agent, mt);
         }
 
-        protected ACLMessage getCollectorRequest(String provider, String genre, int film_count) {
+        protected ACLMessage getCollectorRequest(String provider, FilmScrapper.FilmRequest filmRequest) {
             ACLMessage collectorRequest = new ACLMessage(ACLMessage.REQUEST);
             collectorRequest.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
-            collectorRequest.setContent(genre + ";" + film_count);
+            collectorRequest.setContent(filmRequest.toString());
             collectorRequest.addReceiver(new AID(provider, AID.ISLOCALNAME));
 
             return collectorRequest;
         }
 
         protected ACLMessage handleRequest(ACLMessage request) throws NotUnderstoodException, RefuseException {
-            String[] contents = request.getContent().split(";");
+            FilmScrapper.FilmRequest filmRequest = FilmScrapper.FilmRequest.parse(request.getContent());
 
-            if (contents.length != 2) // Request format is valid
-                throw new NotUnderstoodException("Invalid format: \"GENRE;N_FILMS\" expected");
+            // Check whether request format is valid
+            if (filmRequest == null)
+                throw new NotUnderstoodException("Invalid format: \"GENRE;FILM_COUNT\" expected");
+            // Check whether requested genre can be fetched
+            else if (!FilmScrapper.isValidGenre(filmRequest.getGenre())) // Check valid genre
+                throw new RefuseException("Can't get films with genre \"" + filmRequest.getGenre() + "\"");
             else {
-                genre = contents[0];
+                ParallelBehaviour pb = new ParallelBehaviour(this.myAgent, ParallelBehaviour.WHEN_ALL) {
+                    public int onEnd() {
+                        // Get Interface request message
+                        ACLMessage request = (ACLMessage)getDataStore().get(REQUEST_KEY);
 
-                try {
-                    n_films = Integer.parseInt(contents[1]);
-                } catch (NumberFormatException nfe) {
-                    throw new NotUnderstoodException("Invalid format: \"GENRE;N_FILMS\" expected");
-                }
+                        // Sort fetched films by rating and limit up to user selected maximum
+                        Collections.sort(films);
+                        ArrayList<Film> selected = new ArrayList<Film>();
+                        for(Film film : films) {
+                            if(!selected.contains(film))
+                                selected.add(film);
 
-                if (!FilmScrapper.isValidGenre(genre)) // Check valid genre
-                    throw new RefuseException("Genre not valid");
-                else {
-                    ParallelBehaviour pb = new ParallelBehaviour(this.myAgent, ParallelBehaviour.WHEN_ALL) {
-                        public int onEnd() {
-                            // Get Interface request message
-                            ACLMessage request = (ACLMessage)getDataStore().get(REQUEST_KEY);
-
-                            Collections.sort(films);
-                            ArrayList<Film> selected = new ArrayList<Film>();                            
-
-                            debug("FILM count: " + films.size());
-                            // TODO: (Fix) Way less than n_films are selected
-
-                            for(Film film : films) {
-                                if(!selected.contains(film))
-                                    selected.add(film);
-
-                                if(selected.size() >= n_films) break;
-                            }
-
-                            // Create Interface response message
-                            ACLMessage response = request.createReply();
-                            response.setPerformative(ACLMessage.INFORM);
-                            try {
-                                response.setContentObject(selected);
-                            } catch(IOException ioe) {
-                                response.setPerformative(ACLMessage.FAILURE);
-                                response.setContent("Could not serialize content");
-                                //throw new FailureException("Could not serialize content");
-                            }
-
-                            // Set response message so AchieveREResponder can access it
-                            getDataStore().put(RESULT_NOTIFICATION_KEY, response);
-                            return super.onEnd();
+                            if(selected.size() >= filmRequest.getFilmCount()) break;
                         }
-                    };
 
-                    for(String provider : FilmScrapperFactory.PROVIDERS)
-                        pb.addSubBehaviour(
-                            new CollectorInitiator(this.myAgent,
-                                getCollectorRequest(provider, genre, n_films)));
+                        // Create Interface response message
+                        ACLMessage response = request.createReply();
+                        response.setPerformative(ACLMessage.INFORM);
+                        try {
+                            response.setContentObject(selected);
+                        } catch(IOException ioe) {
+                            response.setPerformative(ACLMessage.FAILURE);
+                            response.setContent("Could not serialize films");
+                        }
 
-                    // Custom ParallelBehaviour will prepare the result
-                    registerPrepareResultNotification(pb);
+                        // Set response message so AchieveREResponder can access it
+                        getDataStore().put(RESULT_NOTIFICATION_KEY, response);
+                        return super.onEnd();
+                    }
+                };
 
-                    ACLMessage agreeMsg = request.createReply();
-                    agreeMsg.setPerformative(ACLMessage.AGREE);
-                    return agreeMsg;
-                }
+                // Add one initiator per provider
+                for(String provider : FilmScrapperFactory.PROVIDERS)
+                    pb.addSubBehaviour(
+                        new CollectorInitiator(this.myAgent,
+                            getCollectorRequest(provider, filmRequest)));
+
+                // Custom ParallelBehaviour will prepare the result
+                registerPrepareResultNotification(pb);
+
+                ACLMessage agree = request.createReply();
+                agree.setPerformative(ACLMessage.AGREE);
+                agree.setContent("Preparing up to " + filmRequest.getFilmCount() + " films");
+                return agree;
             }
         }
     }
@@ -124,35 +109,34 @@ public class IntegratorAgent extends Agent {
             super(a, msg);
         }
 
-        protected void handleAgree(ACLMessage agree){
-            System.out.println(getLocalName() + " AGREE: Collector will provide the requested films");
+        protected void handleAgree(ACLMessage agree) {
+            System.out.println("[" + getLocalName() + "] AGREE: Collector will provide the requested films");
         }
 
-        protected void handleRefuse(ACLMessage refuse){
-            System.out.println(getLocalName() + " REFUSE: " + refuse.getContent());
+        protected void handleRefuse(ACLMessage refuse) {
+            System.out.println("[" + getLocalName() + "] REFUSE: " + refuse.getContent());
         }
 
-        protected void handleNotUnderstood(ACLMessage notUnderstood){
-            System.out.println(getLocalName() + " NOT-UNDERSTOOD: " + notUnderstood.getContent());
+        protected void handleNotUnderstood(ACLMessage notUnderstood) {
+            System.out.println("[" + getLocalName() + "] NOT-UNDERSTOOD: " + notUnderstood.getContent());
         }
 
         @SuppressWarnings("unchecked")
-        protected void handleInform(ACLMessage inform){
-            ArrayList<Film> selected = new ArrayList<Film>();
-
+        protected void handleInform(ACLMessage inform) {
+            ArrayList<Film> fetched = null;
             try {
-                selected = (ArrayList<Film>) inform.getContentObject();
+                fetched = (ArrayList<Film>) inform.getContentObject();
             } catch (UnreadableException ue){
-                System.out.println(getLocalName() + " INFORM: could not deserialize message content");
+                System.out.println("[" + getLocalName() + "] INFORM: could not deserialize films from message");
+                return;
             }
 
-            for(Film film: selected){
+            for(Film film : fetched)
                 films.add(film);
-            }
         }
 
-        protected void handleFailure(ACLMessage failure){
-            System.out.println(getLocalName() + " FAILURE: " + failure.getContent());
+        protected void handleFailure(ACLMessage failure) {
+            System.out.println("[" + getLocalName() + "] FAILURE: " + failure.getContent());
         }
     }
 }
