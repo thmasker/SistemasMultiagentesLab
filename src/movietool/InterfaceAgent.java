@@ -37,6 +37,7 @@ public class InterfaceAgent extends Agent {
             super(a, request);
         }
 
+        @SuppressWarnings("rawtypes")
         protected Vector prepareRequests(ACLMessage request) {
             /// [ USER INTERACTION ]
             /// Film count
