@@ -56,7 +56,7 @@ public class MoviedbScrapper extends FilmScrapper {
 				rating = item.select("div.user_score_chart").first().attr("data-percent");
 
 				if(title.isEmpty() || !isValidRating(rating))
-                    System.out.println("(*) Warning: Invalid movie ['" + title + "', '" + rating + "']");
+                    System.out.println("* [" + getProvider() + "] Warning: Invalid movie ['" + title + "', '" + rating + "']");
 				else
 					films.add(new Film(title, Double.parseDouble(rating) / 10.0));
 			}

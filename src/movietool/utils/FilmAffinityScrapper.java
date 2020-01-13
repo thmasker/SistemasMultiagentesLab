@@ -55,7 +55,7 @@ public class FilmAffinityScrapper extends FilmScrapper {
                 rating = item.select("li.data > div.avg-rating").first().text().replace(',', '.');
 
                 if(title.isEmpty() || !isValidRating(rating))
-                    System.out.println("(*) Warning: Invalid movie ['" + title + "', '" + rating + "']");
+                    System.out.println("* [" + getProvider() + "] Warning: Invalid movie ['" + title + "', '" + rating + "']");
 				else
 					films.add(new Film(title, Double.parseDouble(rating)));
             }
