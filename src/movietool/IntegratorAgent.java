@@ -22,6 +22,10 @@ import movietool.utils.FilmScrapper;
 
 @SuppressWarnings("serial")
 public class IntegratorAgent extends Agent {
+    private void debug(String msg) {
+        System.out.println("[INTEGRATOR] " + msg);
+    }
+
     private ACLMessage msg;
     private ParallelBehaviour pb;
     private ArrayList<Film> films = new ArrayList<Film>();
@@ -47,12 +51,9 @@ public class IntegratorAgent extends Agent {
             // TODO Ver si esto está bien del todo (código, vaya)
             String[] contents = request.getContent().split(";");
 
-            /*
-             * StringTokenizer data = new StringTokenizer(request.getContent()); String
-             * genre = data.nextToken(); int count = data.nextInt();
-             */
-
-            if (contents.length != 2) { // Check valid format
+            if (contents.length != 2) // Request format is valid
+                throw new NotUnderstoodException("Invalid format: \"GENRE;N_FILMS\" expected");
+            else {
                 genre = contents[0];
 
                 try {
@@ -61,11 +62,13 @@ public class IntegratorAgent extends Agent {
                     throw new NotUnderstoodException("Invalid format: \"GENRE;N_FILMS\" expected");
                 }
 
-                if (FilmScrapper.isValidGenre(genre)) { // Check valid genre
+                if (!FilmScrapper.isValidGenre(genre)) // Check valid genre
+                    throw new RefuseException("Genre not valid");
+                else {
                     AID id = new AID();
 
                     msg.setContent(genre + ";" + n_films);
-
+                    
                     // IMDB Collector receiver
                     id.setLocalName("IMDB");
                     msg.addReceiver(id);
@@ -86,10 +89,9 @@ public class IntegratorAgent extends Agent {
                     ACLMessage agreeMsg = request.createReply();
                     agreeMsg.setPerformative(ACLMessage.AGREE);
                     return agreeMsg;
-                } else
-                    throw new RefuseException("Genre not valid");
-            } else
-                throw new NotUnderstoodException("Invalid format: \"GENRE;N_FILMS\" expected");
+                }
+                    
+            }
         }
 
         protected ACLMessage prepareResultNotification(ACLMessage request, ACLMessage response) throws FailureException {
