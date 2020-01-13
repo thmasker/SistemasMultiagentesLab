@@ -35,13 +35,10 @@ public class InterfaceAgent extends Agent {
         fsm.registerFirstState(new InterfaceRequester(), "Requester");
         // TODO No funciona porque el InterfaceInitiator es creado con el contenido del msg nulo
         fsm.registerState(new InterfaceInitiator(this, msg), "Initiator");
-        fsm.registerState(new InterfaceRepeater(), "Repeater");
         fsm.registerLastState(new InterfaceEnder(), "Ender");
 
         fsm.registerDefaultTransition("Requester", "Initiator");
-        fsm.registerDefaultTransition("Initiator", "Repeater");
-        fsm.registerTransition("Repeater", "Requester", 1);
-        fsm.registerTransition("Repeater", "Ender", 0);
+        fsm.registerDefaultTransition("Initiator", "Ender");
 
         addBehaviour(fsm);
     }
@@ -67,7 +64,6 @@ public class InterfaceAgent extends Agent {
 
         public void action() {
             // TODO requestInt() no funciona bien.
-            // TODO Cuando requestInt() funcione, comprobar la repetición del proceso. A las malas no se repite el proceso
             System.out.println("How many movies do you want to get?");
             n_films = this.requestInt();
 
@@ -89,25 +85,6 @@ public class InterfaceAgent extends Agent {
                     System.out.println(getLocalName() + " ERROR: You must enter an integer number");
                 }
             }
-        }
-    }
-
-    /**
-     * If user does not want to repeat the process, this behaviour ends the agent
-     */
-    private class InterfaceRepeater extends OneShotBehaviour {
-        private boolean finish = false;
-
-        public void action(){
-            System.out.println("\nDo you want to select more movies? (Y/N)");
-            String option = sc.next();
-
-            if(option.charAt(0) == 'Y' || option.charAt(0) == 'y')
-                finish = true;
-        }
-
-        public int onEnd(){
-            return finish ? 1 : 0;
         }
     }
 
