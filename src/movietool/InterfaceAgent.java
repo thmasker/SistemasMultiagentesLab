@@ -4,6 +4,7 @@ package movietool;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.util.Vector;
 
 import jade.core.Agent;
 import jade.core.AID;
@@ -19,15 +20,10 @@ import movietool.utils.FilmScrapper;
 
 @SuppressWarnings("serial")
 public class InterfaceAgent extends Agent {
-    private void debug(String msg) {
-        System.out.println("[INTERFACE] " + msg);
-    }
-
     private Scanner sc = new Scanner(System.in);
-    private ACLMessage msg;
 
     protected void setup() {
-        msg = new ACLMessage(ACLMessage.REQUEST);
+        ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
         msg.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
         msg.addReceiver(new AID("Integrator", AID.ISLOCALNAME));
 
@@ -35,80 +31,73 @@ public class InterfaceAgent extends Agent {
     }
 
     protected void takeDown(){
-        System.out.println(getLocalName() + " freeing resources...");
+        System.out.println("[" + getLocalName() + "] freeing resources...");
         System.out.println("\n(C) Alberto Velasco Mata and Diego Pedregal Hidalgo, 2020\n");
         super.takeDown();
     }
 
     private class InterfaceInitiator extends AchieveREInitiator {
-        public InterfaceInitiator(Agent a, ACLMessage msg) {
-            super(a, msg);
+        public InterfaceInitiator(Agent a, ACLMessage request) {
+            super(a, request);
         }
 
-        protected int requestInt(){
+        protected Vector prepareRequests(ACLMessage request) {
+            /// [ USER INTERACTION ]
+            /// Film count
+            System.out.print("How many movies do you want to get?\n>> ");
+            int film_count;
             while(true) {
                 try{
-                    int n = sc.nextInt();
-                    return n;
-                } catch(InputMismatchException ime){
-                    System.out.println(getLocalName() + " ERROR: You must enter an integer number");
+                    film_count = Integer.parseInt(sc.nextLine().trim());
+                    break;
+                } catch(NumberFormatException ime){
+                    System.out.print("[" + getLocalName() + "] ERROR: You must enter an integer number\n>> ");
                 }
             }
-        }
+            /// Genre
+            System.out.println("Choose a genre from below:");
+            for(int i = 0; i < FilmScrapper.FilmGenre.values().length; i++)
+                System.out.println("\t> " + FilmScrapper.FilmGenre.values()[i]);
+            System.out.print("\n>> ");
+            String genre = sc.nextLine().trim();
 
-        protected java.util.Vector prepareRequests(ACLMessage request) {
-            debug("Preparing request to " + request.getAllReceiver().next());
-
-
-            System.out.println("How many movies do you want to get?");
-            int n_films = requestInt();
-
-            for(int i = 0; i < FilmScrapper.FilmGenre.values().length; i++){
-                System.out.println("\t- " + FilmScrapper.FilmGenre.values()[i]);
-            }
-            System.out.println("\nGenre?");
-            String genre = sc.next();
-
-            request.setContent(genre + ";" + n_films);
-
-            debug("Request ready: " + request);
+            // Fill Integrator request
+            request.setContent(genre + ";" + film_count);
             return super.prepareRequests(request);
         }
 
         protected void handleAgree(ACLMessage agree){
-            System.out.println(getLocalName() + " AGREE: Integrator will provide the requested films");
+            System.out.println("[" + getLocalName() + "] AGREE: " + agree.getContent());
         }
 
         protected void handleRefuse(ACLMessage refuse){
-            System.out.println(getLocalName() + " REFUSE: " + refuse.getContent());
+            System.out.println("[" + getLocalName() + "] REFUSE: " + refuse.getContent());
         }
 
         protected void handleNotUnderstood(ACLMessage notUnderstood){
-            System.out.println(getLocalName() + " NOT-UNDERSTOOD: " + notUnderstood.getContent());
+            System.out.println("[" + getLocalName() + "] NOT-UNDERSTOOD: " + notUnderstood.getContent());
         }
 
         @SuppressWarnings("unchecked")
         protected void handleInform(ACLMessage inform){
-            //debug("Received: " + inform.getContent());
             ArrayList<Film> films = null;
 
-            // TODO: Ver si la serialización funciona realmente
             try {
                 films = (ArrayList<Film>) inform.getContentObject();
             } catch (UnreadableException ue){
-                System.out.println(getLocalName() + " INFORM: could not deserialize message content");
+                System.out.println("[" + getLocalName() + "] INFORM: could not deserialize message content");
+                return;
             }
-            
-            if(films == null) return;
-            
-            System.out.println("------ FILMS SELECTED -------");
-            for(Film film : films){
-                System.out.println("\t- " + film.getRating() + "\t" + film.getTitle());
-            }
+
+            System.out.println( "  *********************************************************  \n" +
+                                "  *                         FILMS                         *  \n" +
+                                "  *********************************************************  ");
+            for(Film film : films)
+                System.out.println("\t(" + film.getRating() + ")\t" + film.getTitle());
         }
 
         protected void handleFailure(ACLMessage failure){
-            System.out.println(getLocalName() + " FAILURE: " + failure.getContent());
+            System.out.println("[" + getLocalName() + "] FAILURE: " + failure.getContent());
         }
 
         public int onEnd() {
