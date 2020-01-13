@@ -11,6 +11,8 @@ import org.jsoup.select.Elements;
 
 public class ImdbScrapper extends FilmScrapper {
 	final int FILMS_PER_PAGE = 50;
+
+	public String getProvider() { return "IMDB"; }
 	
     @SuppressWarnings("serial")
 	public ImdbScrapper() {

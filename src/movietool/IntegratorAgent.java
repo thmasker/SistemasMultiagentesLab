@@ -31,6 +31,11 @@ public class IntegratorAgent extends Agent {
             MessageTemplate.MatchPerformative(ACLMessage.REQUEST))));
     }
 
+    protected void takeDown() {
+		System.out.println("[" + getLocalName() + "] freeing resources...");
+		super.takeDown();
+	}
+
     private class InterfaceResponder extends AchieveREResponder {
         public InterfaceResponder(Agent agent, MessageTemplate mt) {
             super(agent, mt);
@@ -110,7 +115,7 @@ public class IntegratorAgent extends Agent {
         }
 
         protected void handleAgree(ACLMessage agree) {
-            System.out.println("[" + getLocalName() + "] AGREE: Collector will provide the requested films");
+            System.out.println("[" + getLocalName() + "] AGREE: " + agree.getContent());
         }
 
         protected void handleRefuse(ACLMessage refuse) {

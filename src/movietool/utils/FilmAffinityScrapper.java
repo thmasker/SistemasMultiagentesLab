@@ -11,6 +11,8 @@ import org.jsoup.select.Elements;
 
 public class FilmAffinityScrapper extends FilmScrapper {
 	final int FILMS_PER_PAGE = 30;
+
+	public String getProvider() { return "FilmAffinity"; }
 	
     @SuppressWarnings("serial")
 	public FilmAffinityScrapper() {

@@ -34,6 +34,8 @@ public abstract class FilmScrapper {
 		this.ratingPattern = Pattern.compile("\\d{1,3}.?\\d*");
 	}
 
+	public abstract String getProvider();
+
 	public ArrayList<Film> getFilms() {
 		return films;
 	}

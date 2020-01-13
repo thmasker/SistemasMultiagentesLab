@@ -11,6 +11,8 @@ import org.jsoup.select.Elements;
 
 public class MoviedbScrapper extends FilmScrapper {
 	final int FILMS_PER_PAGE = 20;
+
+	public String getProvider() { return "MovieDB"; }
 	
 	@SuppressWarnings("serial")
 	public MoviedbScrapper() {

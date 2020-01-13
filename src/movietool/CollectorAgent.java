@@ -26,74 +26,73 @@ public class CollectorAgent extends Agent {
 		try {
 			fs = FilmScrapperFactory.createFilmScrapper(getLocalName());
 		} catch (NameNotFoundException nfe) {
-			System.out.println(getLocalName() + " " + nfe.getExplanation() + " Terminating...");
+			System.out.println("[" + getLocalName() + "] " + nfe.getExplanation() + " - Terminating...");
 			this.takeDown();
 		}
 
-		addBehaviour(new CollectorResponder(this, MessageTemplate.and(MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST), MessageTemplate.MatchPerformative(ACLMessage.REQUEST))));
+		addBehaviour(new IntegratorResponder(this, MessageTemplate.and(
+			MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST),
+			MessageTemplate.MatchPerformative(ACLMessage.REQUEST))));
 	}
 
 	protected void takeDown() {
-		System.out.println(getLocalName() + " freeing resources...");
+		System.out.println("[" + getLocalName() + "] freeing resources...");
 		super.takeDown();
 	}
 
-	private class CollectorResponder extends AchieveREResponder {
-		private String genre;
-		private int n_films;
+	private class IntegratorResponder extends AchieveREResponder {
+		private FilmScrapper.FilmRequest filmRequest;
 
-		public CollectorResponder(Agent a, MessageTemplate mt) {
+		public IntegratorResponder(Agent a, MessageTemplate mt) {
 			super(a, mt);
 		}
 
 		protected ACLMessage handleRequest(ACLMessage request) throws NotUnderstoodException, RefuseException {
-            String [] contents = request.getContent().split(";");
-            
-            if(contents.length != 2)  // Check valid format
-				throw new NotUnderstoodException("Invalid format: \"GENRE;N_FILMS\" expected");
-			else {
-                genre = contents[0];
+			filmRequest = FilmScrapper.FilmRequest.parse(request.getContent());
 
-                try {
-                    n_films = Integer.parseInt(contents[1]);
-                } catch (NumberFormatException nfe) {
-                    throw new NotUnderstoodException("Invalid format: \"GENRE;N_FILMS\" expected");
-                }
-
-                if(FilmScrapper.isValidGenre(genre)) {  // Check valid genre
-                    ACLMessage agreeMsg = request.createReply();
-                    agreeMsg.setPerformative(ACLMessage.AGREE);
-                    return agreeMsg;
-                } else throw new RefuseException("Genre not valid");
+            // Check whether request format is valid
+            if (filmRequest == null)
+                throw new NotUnderstoodException("Invalid format: \"GENRE;FILM_COUNT\" expected");
+            // Check whether requested genre can be fetched
+            else if (!FilmScrapper.isValidGenre(filmRequest.getGenre())) // Check valid genre
+                throw new RefuseException("Can't get films with genre \"" + filmRequest.getGenre() + "\"");
+            else {
+				ACLMessage agree = request.createReply();
+				agree.setPerformative(ACLMessage.AGREE);
+				agree.setContent("Fetching films from " + fs.getProvider());
+				return agree;
             }
 		}
 
 		protected ACLMessage prepareResultNotification(ACLMessage request, ACLMessage response) throws FailureException {
+			// Fetch films from provider
+			try {
+				int actualCount = fs.fetch(
+					FilmGenre.valueOf(filmRequest.getGenre()),
+					4 * filmRequest.getFilmCount());
+				
+				System.out.println("[" + getLocalName() + "] " + actualCount + " films fetched");
+			} catch (IOException ioe) {
+				throw new FailureException("Fetch from \"" + fs.getProvider() + "\" failed");
+			}
+
+			// Select random fetched films
 			ArrayList<Film> selected = new ArrayList<Film>();
-
 			try {
-				int actualCount = fs.fetch(FilmGenre.valueOf(genre), n_films * 4);
-				System.out.println(getLocalName() + "> Got " + actualCount + " films");
+				selected = fs.selectFilms(filmRequest.getFilmCount());
 			} catch (IOException ioe) {
-				ioe.printStackTrace();
+				throw new FailureException("Random selection from \"" + fs.getProvider() + "\" failed");
 			}
+			System.out.println("[" + getLocalName() + "] " + selected.size() + " films randomly selected");
 
+			ACLMessage inform = request.createReply();
+			inform.setPerformative(ACLMessage.INFORM);
 			try {
-				selected = fs.selectFilms(n_films);
-				System.out.println(getLocalName() + "> Randomly selected " + selected.size() + " films");
+				inform.setContentObject(selected);
 			} catch (IOException ioe) {
-				ioe.printStackTrace();
+				throw new FailureException("Could not serialize films from \"" + fs.getProvider() + "\"");
 			}
-
-			ACLMessage informMsg = request.createReply();
-			informMsg.setPerformative(ACLMessage.INFORM);
-			try {
-				informMsg.setContentObject(selected);
-			} catch (IOException ioe) {
-				throw new FailureException("Could not serialize content");
-			}
-
-			return informMsg;
+			return inform;
         }
 	}
 }
