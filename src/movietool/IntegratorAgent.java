@@ -10,7 +10,6 @@ import jade.core.behaviours.ParallelBehaviour;
 import jade.domain.FIPANames;
 import jade.domain.FIPAAgentManagement.NotUnderstoodException;
 import jade.domain.FIPAAgentManagement.RefuseException;
-import jade.domain.FIPAAgentManagement.FailureException;
 import jade.proto.AchieveREInitiator;
 import jade.proto.AchieveREResponder;
 import jade.lang.acl.ACLMessage;
