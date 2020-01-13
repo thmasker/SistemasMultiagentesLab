@@ -3,6 +3,8 @@ package movietool.utils;
 import javax.naming.NameNotFoundException;
 
 public class FilmScrapperFactory {
+	public static String[] PROVIDERS = new String[]{ "FilmAffinity", "IMDB", "MovieDB" };
+
 	public static FilmScrapper createFilmScrapper(String scrapper) throws NameNotFoundException {
 		if(scrapper.equals("FilmAffinity")){
 			return new FilmAffinityScrapper();
@@ -11,7 +13,7 @@ public class FilmScrapperFactory {
 		} else if(scrapper.equals("MovieDB")){
 			return new MoviedbScrapper();
 		} else {
-			throw new NameNotFoundException("Requested WEBSITE is not available.");
+			throw new NameNotFoundException("Requested PROVIDER is not available.");
 		}
 	}
 }

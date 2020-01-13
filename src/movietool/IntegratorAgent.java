@@ -19,13 +19,14 @@ import jade.lang.acl.UnreadableException;
 
 import movietool.utils.Film;
 import movietool.utils.FilmScrapper;
+import movietool.utils.FilmScrapperFactory;
 
 @SuppressWarnings("serial")
 public class IntegratorAgent extends Agent {
     private void debug(String msg) {
         System.out.println("[INTEGRATOR] " + msg);
     }
-    
+
     private ArrayList<Film> films = new ArrayList<Film>();
 
     public void setup() {
@@ -38,6 +39,15 @@ public class IntegratorAgent extends Agent {
 
         public InterfaceResponder(Agent agent, MessageTemplate mt) {
             super(agent, mt);
+        }
+
+        protected ACLMessage getCollectorRequest(String provider, String genre, int film_count) {
+            ACLMessage collectorRequest = new ACLMessage(ACLMessage.REQUEST);
+            collectorRequest.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
+            collectorRequest.setContent(genre + ";" + film_count);
+            collectorRequest.addReceiver(new AID(provider, AID.ISLOCALNAME));
+
+            return collectorRequest;
         }
 
         protected ACLMessage handleRequest(ACLMessage request) throws NotUnderstoodException, RefuseException {
@@ -92,26 +102,12 @@ public class IntegratorAgent extends Agent {
                         }
                     };
 
-                    ACLMessage collectorRequest = new ACLMessage(ACLMessage.REQUEST);
-                    collectorRequest.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
-                    collectorRequest.setContent(genre + ";" + n_films);
+                    for(String provider : FilmScrapperFactory.PROVIDERS)
+                        pb.addSubBehaviour(
+                            new CollectorInitiator(this.myAgent,
+                                getCollectorRequest(provider, genre, n_films)));
 
-                    // IMDB Collector Initiator
-                    collectorRequest.addReceiver(new AID("IMDB", AID.ISLOCALNAME));
-                    pb.addSubBehaviour(new CollectorInitiator(this.myAgent, collectorRequest));
-                    collectorRequest.clearAllReceiver();
-
-                    // FilmAffinity Collector Initiator
-                    collectorRequest.addReceiver(new AID("FilmAffinity", AID.ISLOCALNAME));
-                    pb.addSubBehaviour(new CollectorInitiator(this.myAgent, collectorRequest));
-                    collectorRequest.clearAllReceiver();
-
-                    // TheMovieDB Collector Initiator
-                    collectorRequest.addReceiver(new AID("MovieDB", AID.ISLOCALNAME));
-                    pb.addSubBehaviour(new CollectorInitiator(this.myAgent, collectorRequest));
-
-
-                    // ParallelBehaviour will prepare the result
+                    // Custom ParallelBehaviour will prepare the result
                     registerPrepareResultNotification(pb);
 
                     ACLMessage agreeMsg = request.createReply();
