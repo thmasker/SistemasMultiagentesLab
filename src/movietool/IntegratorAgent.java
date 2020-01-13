@@ -25,17 +25,10 @@ public class IntegratorAgent extends Agent {
     private void debug(String msg) {
         System.out.println("[INTEGRATOR] " + msg);
     }
-
-    private ACLMessage msg;
-    private ParallelBehaviour pb;
+    
     private ArrayList<Film> films = new ArrayList<Film>();
 
     public void setup() {
-        msg = new ACLMessage(ACLMessage.REQUEST);
-        msg.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
-
-        pb = new ParallelBehaviour(this, ParallelBehaviour.WHEN_ALL);
-
         addBehaviour(new InterfaceResponder(this, MessageTemplate.and(MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST), MessageTemplate.MatchPerformative(ACLMessage.REQUEST))));
     }
 
@@ -48,7 +41,6 @@ public class IntegratorAgent extends Agent {
         }
 
         protected ACLMessage handleRequest(ACLMessage request) throws NotUnderstoodException, RefuseException {
-            // TODO Ver si esto está bien del todo (código, vaya)
             String[] contents = request.getContent().split(";");
 
             if (contents.length != 2) // Request format is valid
@@ -65,66 +57,74 @@ public class IntegratorAgent extends Agent {
                 if (!FilmScrapper.isValidGenre(genre)) // Check valid genre
                     throw new RefuseException("Genre not valid");
                 else {
-                    AID id = new AID();
+                    ParallelBehaviour pb = new ParallelBehaviour(this.myAgent, ParallelBehaviour.WHEN_ALL) {
+                        public int onEnd() {
+                            // Get Interface request message
+                            ACLMessage request = (ACLMessage)getDataStore().get(REQUEST_KEY);
 
-                    msg.setContent(genre + ";" + n_films);
-                    
-                    // IMDB Collector receiver
-                    id.setLocalName("IMDB");
-                    msg.addReceiver(id);
-                    pb.addSubBehaviour(new InterfaceInitiator(myAgent, msg));
+                            Collections.sort(films);
+                            ArrayList<Film> selected = new ArrayList<Film>();                            
 
-                    // FilmAffinity Collector receiver
-                    id.setLocalName("FilmAffinity");
-                    msg.addReceiver(id);
-                    pb.addSubBehaviour(new InterfaceInitiator(myAgent, msg));
+                            debug("FILM count: " + films.size());
+                            // TODO: (Fix) Way less than n_films are selected
 
-                    // MovieDB Collector receiver
-                    id.setLocalName("MovieDB");
-                    msg.addReceiver(id);
-                    pb.addSubBehaviour(new InterfaceInitiator(myAgent, msg));
+                            for(Film film : films) {
+                                if(!selected.contains(film))
+                                    selected.add(film);
 
-                    myAgent.addBehaviour(pb);
+                                if(selected.size() >= n_films) break;
+                            }
+
+                            // Create Interface response message
+                            ACLMessage response = request.createReply();
+                            response.setPerformative(ACLMessage.INFORM);
+                            try {
+                                response.setContentObject(selected);
+                            } catch(IOException ioe) {
+                                response.setPerformative(ACLMessage.FAILURE);
+                                response.setContent("Could not serialize content");
+                                //throw new FailureException("Could not serialize content");
+                            }
+
+                            // Set response message so AchieveREResponder can access it
+                            getDataStore().put(RESULT_NOTIFICATION_KEY, response);
+                            return super.onEnd();
+                        }
+                    };
+
+                    ACLMessage collectorRequest = new ACLMessage(ACLMessage.REQUEST);
+                    collectorRequest.setProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST);
+                    collectorRequest.setContent(genre + ";" + n_films);
+
+                    // IMDB Collector Initiator
+                    collectorRequest.addReceiver(new AID("IMDB", AID.ISLOCALNAME));
+                    pb.addSubBehaviour(new CollectorInitiator(this.myAgent, collectorRequest));
+                    collectorRequest.clearAllReceiver();
+
+                    // FilmAffinity Collector Initiator
+                    collectorRequest.addReceiver(new AID("FilmAffinity", AID.ISLOCALNAME));
+                    pb.addSubBehaviour(new CollectorInitiator(this.myAgent, collectorRequest));
+                    collectorRequest.clearAllReceiver();
+
+                    // TheMovieDB Collector Initiator
+                    collectorRequest.addReceiver(new AID("MovieDB", AID.ISLOCALNAME));
+                    pb.addSubBehaviour(new CollectorInitiator(this.myAgent, collectorRequest));
+
+
+                    // ParallelBehaviour will prepare the result
+                    registerPrepareResultNotification(pb);
 
                     ACLMessage agreeMsg = request.createReply();
                     agreeMsg.setPerformative(ACLMessage.AGREE);
                     return agreeMsg;
                 }
-                    
             }
-        }
-
-        protected ACLMessage prepareResultNotification(ACLMessage request, ACLMessage response) throws FailureException {
-            ArrayList<Film> selected = new ArrayList<Film>();
-
-            ACLMessage informMsg = request.createReply();
-            informMsg.setPerformative(ACLMessage.INFORM);
-
-            // TODO lo que tiene que hacer el Integrator (seleccionar los n_films DISTINTOS mejores de
-            // n_films*3 totales (n_films por cada Collector) ¿?)
-            Collections.sort(films);
-            int n = n_films;
-            while(n > 0){
-                Film film = films.get(n);
-
-                if(!selected.contains(film)){
-                    selected.add(film);
-                    n--;
-                }
-            }
-
-            try {
-                informMsg.setContentObject(selected);
-            } catch (IOException ioe) {
-                throw new FailureException("Could not serialize content");
-            }
-
-            return informMsg;
         }
     }
 
-    private class InterfaceInitiator extends AchieveREInitiator {
-        public InterfaceInitiator(Agent a, ACLMessage msg){
+
+    private class CollectorInitiator extends AchieveREInitiator {
+        public CollectorInitiator(Agent a, ACLMessage msg){
             super(a, msg);
         }
 
@@ -144,7 +144,6 @@ public class IntegratorAgent extends Agent {
         protected void handleInform(ACLMessage inform){
             ArrayList<Film> selected = new ArrayList<Film>();
 
-            // TODO: Ver si la serialización funciona realmente
             try {
                 selected = (ArrayList<Film>) inform.getContentObject();
             } catch (UnreadableException ue){

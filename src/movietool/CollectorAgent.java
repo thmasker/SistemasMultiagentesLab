@@ -47,10 +47,11 @@ public class CollectorAgent extends Agent {
 		}
 
 		protected ACLMessage handleRequest(ACLMessage request) throws NotUnderstoodException, RefuseException {
-			// TODO Ver si esto está bien del todo (código, vaya)
             String [] contents = request.getContent().split(";");
             
-            if(contents.length != 2) {  // Check valid format
+            if(contents.length != 2)  // Check valid format
+				throw new NotUnderstoodException("Invalid format: \"GENRE;N_FILMS\" expected");
+			else {
                 genre = contents[0];
 
                 try {
@@ -64,7 +65,7 @@ public class CollectorAgent extends Agent {
                     agreeMsg.setPerformative(ACLMessage.AGREE);
                     return agreeMsg;
                 } else throw new RefuseException("Genre not valid");
-            } else throw new NotUnderstoodException("Invalid format: \"GENRE;N_FILMS\" expected");
+            }
 		}
 
 		protected ACLMessage prepareResultNotification(ACLMessage request, ACLMessage response) throws FailureException {

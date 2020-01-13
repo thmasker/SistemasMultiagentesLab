@@ -89,7 +89,8 @@ public class InterfaceAgent extends Agent {
 
         @SuppressWarnings("unchecked")
         protected void handleInform(ACLMessage inform){
-            ArrayList<Film> films = new ArrayList<Film>();
+            //debug("Received: " + inform.getContent());
+            ArrayList<Film> films = null;
 
             // TODO: Ver si la serialización funciona realmente
             try {
@@ -97,9 +98,11 @@ public class InterfaceAgent extends Agent {
             } catch (UnreadableException ue){
                 System.out.println(getLocalName() + " INFORM: could not deserialize message content");
             }
-
+            
+            if(films == null) return;
+            
             System.out.println("------ FILMS SELECTED -------");
-            for(Film film: films){
+            for(Film film : films){
                 System.out.println("\t- " + film.getRating() + "\t" + film.getTitle());
             }
         }
