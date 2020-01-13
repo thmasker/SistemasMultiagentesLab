@@ -60,7 +60,7 @@ public class ImdbScrapper extends FilmScrapper {
 				}
 
 				if(title.isEmpty() || !isValidRating(rating))
-                    System.out.println("(*) Warning: Invalid movie ['" + title + "', '" + rating + "']");
+                    System.out.println("* [" + getProvider() + "] Warning: Invalid movie ['" + title + "', '" + rating + "']");
 				else
 					films.add(new Film(title, Double.parseDouble(rating)));
             }
