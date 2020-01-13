@@ -1,5 +1,7 @@
 package movietool.utils;
 
+import java.util.ArrayList;
+
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -27,4 +29,28 @@ public class TrueRandomGenerator {
         in.close();
         return num;
     }
+
+    /*
+	 * Get multiple True Random Numbers in the range [min, max] (both included)
+     *
+	 * min: Minimum number that can be generated
+     * max: Maximum number that can be generated
+     * count: Amount of numbers generated
+	 * 
+	 * Return:
+	 * 		int[]   Array of random numbers in [min, max] range
+	 */
+	public static ArrayList<Integer> getInt(int min, int max, int count) throws IOException {
+        ArrayList<Integer> generated = new ArrayList<Integer>();
+
+        int n, i = 0;
+        while(i < count) {
+            n = TrueRandomGenerator.getInt(min, max);
+            if(!generated.contains(n) || (max-min+1) < count) {
+                generated.add(n);
+                i++;
+            }
+        }
+        return generated;
+	}
 }

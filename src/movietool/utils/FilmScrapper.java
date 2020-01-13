@@ -54,37 +54,20 @@ public abstract class FilmScrapper {
 	public abstract int fetch(FilmGenre genre, int filmCount) throws IOException;
 	
 	/*
-	 * n_films:	Number of films to be selected randomly
+	 * filmCount:	Number of films to be selected randomly
 	 * 
 	 * Return:
 	 * 		ArrayList<Film>	Selected films based on true random numbers
 	 */
-	public ArrayList<Film> selectFilms(int n_films) throws IOException {
+	public ArrayList<Film> selectFilms(int filmCount) throws IOException {
 		ArrayList<Film> selected = new ArrayList<Film>();
 		
-		int[] randomNumbers = random(n_films);
+		ArrayList<Integer> randomNumbers = TrueRandomGenerator.getInt(0, films.size()-1, filmCount);
 		
-		for(int random : randomNumbers)
+		for(Integer random : randomNumbers)
 			selected.add(films.get(random));
 		
 		return selected;
-	}
-	
-	/*
-	 * n_films: Number of randoms to be generated
-	 * 
-	 * Return:
-	 * 		int []	Randomly generated numbers
-	 */
-	protected int[] random(int n_films) throws IOException {
-		int[] n_generated = new int[n_films];
-		int max = this.films.size() - 1;
-		
-		// TODO: Avoid repeated numbers
-		for(int i = 0; i < n_films; i++)
-			n_generated[i] = TrueRandomGenerator.getInt(0, max);
-		
-		return n_generated;
 	}
 
 	/**
