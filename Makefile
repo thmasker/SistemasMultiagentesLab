@@ -37,8 +37,11 @@ java: $(BUILD_DIR)
 test-bots:
 	java -cp $(CLASSPATH)$(CP_SEP)$(BUILD_DIR) $(BOTTEST_CLASS)
 
-run:
+gui:
 	java -cp $(BUILD_DIR)$(CP_SEP)$(CLASSPATH) jade.Boot -gui -agents "IMDB:$(COLLECTOR_CLASS);FilmAffinity:$(COLLECTOR_CLASS);MovieDB:$(COLLECTOR_CLASS);Integrator:$(INTEGRATOR_CLASS);Interface:$(INTERFACE_CLASS)"
+
+run:
+	java -cp $(BUILD_DIR)$(CP_SEP)$(CLASSPATH) jade.Boot -agents "IMDB:$(COLLECTOR_CLASS);FilmAffinity:$(COLLECTOR_CLASS);MovieDB:$(COLLECTOR_CLASS);Integrator:$(INTEGRATOR_CLASS);Interface:$(INTERFACE_CLASS)"
 
 clean:
 	$(RM) $(BUILD_DIR) .$(OS_SEP)APDescription.txt .$(OS_SEP)MTPs-Main-Container.txt
