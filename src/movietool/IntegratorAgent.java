@@ -25,7 +25,7 @@ public class IntegratorAgent extends Agent {
     private ArrayList<Film> films = new ArrayList<Film>();
 
     public void setup() {
-        addBehaviour(new InterfaceResponder(this, MessageTemplate.and(
+        addBehaviour(new IntegratorResponder(this, MessageTemplate.and(
             MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST),
             MessageTemplate.MatchPerformative(ACLMessage.REQUEST))));
     }
@@ -35,8 +35,8 @@ public class IntegratorAgent extends Agent {
 		super.takeDown();
 	}
 
-    private class InterfaceResponder extends AchieveREResponder {
-        public InterfaceResponder(Agent agent, MessageTemplate mt) {
+    private class IntegratorResponder extends AchieveREResponder {
+        public IntegratorResponder(Agent agent, MessageTemplate mt) {
             super(agent, mt);
         }
 
@@ -93,7 +93,7 @@ public class IntegratorAgent extends Agent {
                 // Add one initiator per provider
                 for(String provider : FilmScrapperFactory.PROVIDERS)
                     pb.addSubBehaviour(
-                        new CollectorInitiator(this.myAgent,
+                        new IntegratorInitiator(this.myAgent,
                             getCollectorRequest(provider, filmRequest)));
 
                 // Custom ParallelBehaviour will prepare the result
@@ -108,8 +108,8 @@ public class IntegratorAgent extends Agent {
     }
 
 
-    private class CollectorInitiator extends AchieveREInitiator {
-        public CollectorInitiator(Agent a, ACLMessage msg){
+    private class IntegratorInitiator extends AchieveREInitiator {
+        public IntegratorInitiator(Agent a, ACLMessage msg){
             super(a, msg);
         }
 

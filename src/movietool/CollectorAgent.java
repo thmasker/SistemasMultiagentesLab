@@ -30,7 +30,7 @@ public class CollectorAgent extends Agent {
 			this.takeDown();
 		}
 
-		addBehaviour(new IntegratorResponder(this, MessageTemplate.and(
+		addBehaviour(new CollectorResponder(this, MessageTemplate.and(
 			MessageTemplate.MatchProtocol(FIPANames.InteractionProtocol.FIPA_REQUEST),
 			MessageTemplate.MatchPerformative(ACLMessage.REQUEST))));
 	}
@@ -40,10 +40,10 @@ public class CollectorAgent extends Agent {
 		super.takeDown();
 	}
 
-	private class IntegratorResponder extends AchieveREResponder {
+	private class CollectorResponder extends AchieveREResponder {
 		private FilmScrapper.FilmRequest filmRequest;
 
-		public IntegratorResponder(Agent a, MessageTemplate mt) {
+		public CollectorResponder(Agent a, MessageTemplate mt) {
 			super(a, mt);
 		}
 
